@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Game"
+        android:icon="@drawable/ic_gamepad"
+        android:id="@+id/game" />
+    <item android:title="Reviews"
+        android:icon="@drawable/ic_loop"
+        android:id="@+id/reviews"/>
+    <item android:title="Best Scores"
+        android:icon="@drawable/ic_cup"
+        android:id="@+id/best_scores"/>
+</menu>
