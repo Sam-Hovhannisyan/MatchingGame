@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -16,6 +17,8 @@ public class ScoresActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
     Button logOut;
+    TextView available;
+    int i = 0;
 
     @SuppressLint({"MissingInflatedId", "ResourceAsColor"})
     @Override
@@ -24,6 +27,10 @@ public class ScoresActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scores);
 
         logOut = findViewById(R.id.logout);
+        available = findViewById(R.id.available);
+        if (i == 0){
+            available.setVisibility(View.VISIBLE);
+        }
 
         logOut.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
