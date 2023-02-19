@@ -48,16 +48,17 @@ public class LoginActivity extends AppCompatActivity {
             this.finish();
         });
         btnlogin.setOnClickListener(view -> {
-            if (isEmpty(inputUsername)) inputUsername.setError("You must enter username to register!");
+            if (isEmpty(inputUsername)) inputUsername.setError("You must enter username to sign in!");
             else if(inputUsername.getText().toString().equals("admin")){
                 startActivity(new Intent(this, ShowDatabase.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
             }
-            else if (isEmpty(inputPassword)) inputPassword.setError("You must enter password to register!");
+            else if (isEmpty(inputPassword)) inputPassword.setError("You must enter password to sign in!");
             else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))){
                 MainActivity.username = inputUsername.getText().toString();
                 Toast.makeText(this, "All Right!", Toast.LENGTH_SHORT).show();
+                ScoresActivity.i = 1;
                 startActivity(new Intent(this, MainActivity.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();

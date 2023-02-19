@@ -69,6 +69,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         playOffline.setOnClickListener(view -> {
+            ScoresActivity.i = 0;
             startActivity(new Intent(this, MainActivity.class));
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             this.finish();

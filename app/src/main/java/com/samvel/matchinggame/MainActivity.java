@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.service.controls.actions.FloatAction;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
@@ -52,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int user_id;
     public static String username = "";
+
     int n = 12; // Game size
     int id, width, nBestScore, tick;
     int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
@@ -109,12 +109,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
 
         bottomNavBar.getMenu().getItem(1).setOnMenuItemClickListener(item -> {
-            SwitchActivities(1);
+            switchActivities(1);
             bottomNavBar.getMenu().getItem(1).setChecked(true);
             return true;
         });
         bottomNavBar.getMenu().getItem(2).setOnMenuItemClickListener(item -> {
-            SwitchActivities(2);
+            switchActivities(2);
             bottomNavBar.getMenu().getItem(2).setChecked(true);
             return true;
         });
@@ -132,16 +132,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         user_id = user_usernames.indexOf(username);
 
-        Toast.makeText(this, user_id + "", Toast.LENGTH_SHORT).show();
-
         SharedPreferences prefs = getSharedPreferences("High_Score", MODE_PRIVATE);
         nBestScore = prefs.getInt("best-score-" + user_id, 0);
+
+        //Toast.makeText(this, nBestScore + "", Toast.LENGTH_SHORT).show();
 
         SharedPreferences getPrefs = getSharedPreferences("Prefs", MODE_PRIVATE);
         savings = getPrefs.getString("scores_", "");
         sizes = getPrefs.getString("size_", "");
         steps = getPrefs.getString("step_", "");
         times = getPrefs.getString("time_", "");
+
 
         // Display sizes
 
@@ -246,8 +247,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startGame.setOnClickListener(v -> {
             isStartClicked = true;
             imageNumbers = new ArrayList<>();
-            ResetAll();
-            Generate();
+            resetAll();
+            generate();
             isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
             isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
             Collections.fill(isClickable, Boolean.TRUE);
@@ -258,20 +259,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 pauseResume.setVisibility(View.VISIBLE);
                 mTextViewCountDown.setVisibility(View.VISIBLE);
                 pauseResume.setText("Pause");
-                SetTimer(i);
-                StartTimer();
+                setTimer(i);
+                startTimer();
             }
         });
 
         pauseResume.setOnClickListener(v -> {
             if(isOnPause){
-                PauseTimer();
+                pauseTimer();
                 pauseResume.setText("Resume");
                 isStartClicked = false;
                 isOnPause = false;
             }
             else{
-                StartTimer();
+                startTimer();
                 pauseResume.setText("Pause");
                 isStartClicked = true;
                 isOnPause = true;
@@ -281,8 +282,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playAgain.setOnClickListener(v -> {
             endDialog.cancel();
             //startDialog.show();
-            ResetAll();
-            ResetTimer();
+            resetAll();
+            resetTimer();
             isStartClicked = false;
             gridLayout.removeAllViews();
             startGame.setVisibility(View.VISIBLE);
@@ -293,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void SwitchActivities(int i) {
+    private void switchActivities(int i) {
         if (i == 1) {
             switchActivityIntent = new Intent(this, ReviewsActivity.class);
         }
@@ -320,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         id = view.getId(); // Get current image id
 
         if (!checkIsImageOpen[id] && isClickable.get(id)) { // if("image is not opened" and "is image clickable")
-            SetImage(id); // Change image using id
+            setImage(id); // Change image using id
             checkIsImageOpen[id] = true;
             if (clicked == 0) {
                 lastClicked = id;
@@ -345,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 for (int i = 0; i < n; i++) {
                     imageViews[i] = imageButtons.get(i);
                 }
-                imageThread.SendImage(imageViews);
+                imageThread.sendImage(imageViews);
                 for (int i = 0; i < n; i++) isClickableTrack.set(i, isClickable.get(i));
                 Collections.fill(isClickable, false);
                 imageThread.start();
@@ -364,12 +365,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bestScore.setText("Best score:" + nBestScore);
             score.setText("Your score:" + nScore);
             endDialog.show();
-            if (isVisible) PauseTimer();
-            SaveScore();
+            if (isVisible) pauseTimer();
+            saveScore();
         }
     }
 
-    private void SaveScore() {
+    private void saveScore() {
         if (nScore < 0) nScore = 0;
         savings += nScore + "-";
         sizes += currentSize + "-";
@@ -381,6 +382,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         savePrefs.putString("step_", steps);
         savePrefs.putString("time_", times);
         savePrefs.apply();
+
+        SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
+        editor.putInt("best-score-" + user_id, nBestScore);
+        editor.apply();
     }
 
     @Override
@@ -392,7 +397,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.apply();
     }
 
-    static void Randomize(ArrayList<Integer> arr) {
+    static void randomize(ArrayList<Integer> arr) {
         // Creating a object for Random class
         Random r = new Random();
 
@@ -411,18 +416,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    void SetImage(int i) {
+    void setImage(int i) {
         ImageView currentImage = imageButtons.get(i);
         int currentImageId = imageNumbers.get(i);
         currentImage.setImageResource(links.get(currentImageId));
     }
 
-    void ResetAll() {
+    void resetAll() {
         tick = 0;
         nScore = 0;
         checkIsImageOpen = new boolean[n];
         mTextViewCountDown.setText(String.format(Locale.getDefault(), "%02d:%02d", 0, 0));
-        Randomize(imageNumbers);
+        randomize(imageNumbers);
         for (int i = 0; i < imageButtons.toArray().length; i++) {
             ImageView cur = imageButtons.get(i);
             cur.setImageResource(R.drawable.code);
@@ -433,14 +438,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         allChecked = 0;
     }
 
-    private void Generate() {
+    private void generate() {
         for (int i = 0; i < n / 2; i++) {
             imageNumbers.add(i);
         }
         for (int i = 0; i < n / 2; i++) {
             imageNumbers.add(i);
         }
-        Randomize(imageNumbers);
+        randomize(imageNumbers);
 
         imageButtons = new ArrayList<>(n);
         gridLayout.removeAllViews();
@@ -477,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void StartTimer() {
+    private void startTimer() {
         mCountDownTimer = new CountDownTimer(mTimeLeftInMillis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -501,11 +506,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }.start();
     }
 
-    private void PauseTimer() {
+    private void pauseTimer() {
         mCountDownTimer.cancel();
     }
 
-    private void ResetTimer() {
+    private void resetTimer() {
         mTimeLeftInMillis = startTimeInMillis;
         updateCountDownText();
     }
@@ -518,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTextViewCountDown.setText(timeLeftFormatted);
     }
 
-    private void SetTimer(int i) {
+    private void setTimer(int i) {
         if(i == -1) startTimeInMillis = 5000;
         else if (i == 0) startTimeInMillis = 30000;
         else if (i == 1) startTimeInMillis = 45000;
@@ -550,7 +555,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isAlive = false;
         }
 
-        public void SendImage(ImageView[] imageViews) {
+        public void sendImage(ImageView[] imageViews) {
             lastImage = imageViews[lastClicked];
             currentImage = imageViews[id];
         }

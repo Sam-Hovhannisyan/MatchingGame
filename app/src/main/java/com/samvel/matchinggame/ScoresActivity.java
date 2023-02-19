@@ -2,6 +2,8 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.ArrayList;
+
 import de.codecrafters.tableview.TableView;
 import de.codecrafters.tableview.toolkit.SimpleTableDataAdapter;
 import de.codecrafters.tableview.toolkit.SimpleTableHeaderAdapter;
@@ -19,30 +23,44 @@ import de.codecrafters.tableview.toolkit.SimpleTableHeaderAdapter;
 public class ScoresActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
+    MyDatabaseHelper myDB;
     Button logOut;
     TextView available;
     TableView tableView;
-    int i = 1;
+    String[] headers = {"Username", "Played Games", "Best Score"};;
+    String[][] data;
+    static int i = 1;
+    ArrayList<Integer> user_bestScores = new ArrayList<>();
 
-    @SuppressLint({"MissingInflatedId", "ResourceAsColor"})
+    @SuppressLint({"MissingInflatedId", "ResourceAsColor", "Range"})
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scores);
 
+        myDB = new MyDatabaseHelper(ScoresActivity.this);
+        Cursor cursor = myDB.readAllData();
         tableView = findViewById(R.id.tableView);
         logOut = findViewById(R.id.logout);
         available = findViewById(R.id.available);
         if (i == 0) {
             available.setVisibility(View.VISIBLE);
+            tableView.setHeaderVisible(false);
         }
+        else{
+            data = new String[cursor.getCount()][3];
+            if (cursor.getCount() > 0) {
+                while (cursor.moveToNext()) {
+                    data[cursor.getPosition()][0] = cursor.getString(1);
+                    data[cursor.getPosition()][1] = cursor.getString(2);
+                    data[cursor.getPosition()][2] = cursor.getString(4);
+                }
+            }
 
-        String[] headers = {"ID", "Name", "Surname", "Age"};
-        String[][] data = {{"1", "Joe", "Dona", "65"}, {"2", "Mark", "Dawn", "21"}};
+            tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
+            tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
 
-        tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
-        tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
-
+        }
         logOut.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
             this.finish();
