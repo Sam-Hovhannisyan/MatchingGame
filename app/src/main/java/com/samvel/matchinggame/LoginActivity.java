@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
-import java.util.SortedMap;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -56,7 +55,6 @@ public class LoginActivity extends AppCompatActivity {
                 inputPassword.setError("You must enter password to sign in!");
             else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))) {
                 MainActivity.user_id = user_username.indexOf(inputUsername.getText().toString());
-                Toast.makeText(this, "All Right!", Toast.LENGTH_SHORT).show();
                 ScoresActivity.i = 1;
                 startActivity(new Intent(this, MainActivity.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);

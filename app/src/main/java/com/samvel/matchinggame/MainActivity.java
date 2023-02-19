@@ -18,12 +18,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -65,14 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     AlertDialog endDialog;
     TextView endText, score, bestScore;
-    RecyclerView recyclerView;
 
     boolean isStartClicked = false; // Check if start button is clicked
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
 
-    ArrayList<String> user_ids, user_bestscores;
     ArrayList<Integer> scores = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
     ArrayList<Boolean> isClickableTrack = new ArrayList<>();
@@ -103,9 +99,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        user_ids = new ArrayList<>();
-        user_bestscores = new ArrayList<>();
-
         myDB = new MyDatabaseHelper(MainActivity.this);
 
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
@@ -124,19 +117,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Getting highest score
 
-        Cursor cursor = myDB.readAllData();
-
-        if(cursor.getCount() > 0){
-            while (cursor.moveToNext()){
-                user_ids.add(cursor.getString(0));
-                user_bestscores.add(cursor.getString(4));
-            }
-        }
-
         SharedPreferences prefs = getSharedPreferences("High_Score", MODE_PRIVATE);
         nBestScore = prefs.getInt("best-score-" + user_id, 0);
-
-        //Toast.makeText(this, nBestScore + "", Toast.LENGTH_SHORT).show();
 
         SharedPreferences getPrefs = getSharedPreferences("Prefs", MODE_PRIVATE);
         savings = getPrefs.getString("scores_", "");
@@ -358,7 +340,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int k = 0;
             if (!isVisible) k = 100;
             nScore = 200 * (i + 1) - (int) (startTimeInMillis / 400000) - tick - stepCount - k;
-            Toast.makeText(this, "" + nScore, Toast.LENGTH_SHORT).show();
             if (nScore > nBestScore) nBestScore = nScore;
             scores.add(nScore);
             endText.setText("You Win!");
@@ -376,6 +357,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sizes += currentSize + "-";
         steps += stepCount + "-";
         times += tick + "-";
+
         SharedPreferences.Editor savePrefs = getSharedPreferences("Prefs", MODE_PRIVATE).edit();
         savePrefs.putString("scores_", savings);
         savePrefs.putString("size_", sizes);
@@ -384,18 +366,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         savePrefs.apply();
 
         myDB = new MyDatabaseHelper(MainActivity.this);
-        myDB.updateBestScore(user_ids.get(user_id), nBestScore + "");
+        myDB.updateBestScore(user_id + 1 + "", nBestScore + "");
         SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
         editor.putInt("best-score-" + user_id, nBestScore);
-        editor.apply();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        // Saving highest score
-        SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
-        editor.putInt("best-score", nBestScore);
         editor.apply();
     }
 

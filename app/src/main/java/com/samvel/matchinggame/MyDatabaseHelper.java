@@ -1,25 +1,13 @@
 package com.samvel.matchinggame;
 
-import static androidx.core.content.PackageManagerCompat.LOG_TAG;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
-import android.os.Environment;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
@@ -62,12 +50,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_EMAIL, email);
         cv.put(COLUMN_PASSWORD, password);
         cv.put(COLUMN_BESTSCORE, bestscore);
-        long result = db.insert(TABLE_NAME, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(context, "Added Successfully!", Toast.LENGTH_SHORT).show();
-        }
     }
 
     Cursor readAllData() {
@@ -86,12 +68,20 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_BESTSCORE, bestscore);
 
+        // Check if data updates successfully
+
         long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
         if (result == -1) {
             Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(context, "Updated Successfully!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    void updatePassword(String row_id, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_PASSWORD, password);
     }
 
     void updateData(String row_id, String username, String email, String password, String bestscore) {
@@ -101,13 +91,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_EMAIL, email);
         cv.put(COLUMN_PASSWORD, password);
         cv.put(COLUMN_BESTSCORE, bestscore);
-
-        long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
-        if (result == -1) {
-            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(context, "Updated Successfully!", Toast.LENGTH_SHORT).show();
-        }
     }
 
     void deleteOneRow(String row_id) {

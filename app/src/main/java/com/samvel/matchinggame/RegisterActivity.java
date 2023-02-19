@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,7 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
             if (!checkDataEntered()) {
                 errorText.setVisibility(View.VISIBLE);
             } else if (!inputPassword.getText().toString().equals(inputConformPassword.getText().toString())) {
-                Toast.makeText(this, "Conform password doesn't match", Toast.LENGTH_SHORT).show();
+                inputConformPassword.setError("Conform password doesn't match");
             } else if(user_username.contains(inputUsername.getText().toString())){
                 inputUsername.setError("This username is already exist!");
             } else {
