@@ -47,7 +47,7 @@
         tools:ignore="MissingConstraints" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/bestScoresText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Best Scores"
@@ -63,6 +63,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/bestScoresText"
+        tools:ignore="MissingConstraints" />
+
+    <de.codecrafters.tableview.TableView
+        android:id="@+id/tableView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="10sp"
+        app:tableView_headerColor="@color/blue"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintTop_toBottomOf="@id/bestScoresText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:tableView_columnCount="4"
         tools:ignore="MissingConstraints" />
 </androidx.constraintlayout.widget.ConstraintLayout>

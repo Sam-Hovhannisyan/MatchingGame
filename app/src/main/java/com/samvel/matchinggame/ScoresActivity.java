@@ -2,7 +2,6 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,12 +12,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import de.codecrafters.tableview.TableView;
+import de.codecrafters.tableview.toolkit.SimpleTableDataAdapter;
+import de.codecrafters.tableview.toolkit.SimpleTableHeaderAdapter;
+
 public class ScoresActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
     Button logOut;
     TextView available;
-    int i = 0;
+    TableView tableView;
+    int i = 1;
 
     @SuppressLint({"MissingInflatedId", "ResourceAsColor"})
     @Override
@@ -26,11 +30,18 @@ public class ScoresActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scores);
 
+        tableView = findViewById(R.id.tableView);
         logOut = findViewById(R.id.logout);
         available = findViewById(R.id.available);
-        if (i == 0){
+        if (i == 0) {
             available.setVisibility(View.VISIBLE);
         }
+
+        String[] headers = {"ID", "Name", "Surname", "Age"};
+        String[][] data = {{"1", "Joe", "Dona", "65"}, {"2", "Mark", "Dawn", "21"}};
+
+        tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
+        tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
 
         logOut.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
@@ -54,8 +65,7 @@ public class ScoresActivity extends AppCompatActivity {
     private void switchActivities(int i) {
         if (i == 1) {
             switchActivityIntent = new Intent(this, ReviewsActivity.class);
-        }
-        else if(i == 0) {
+        } else if (i == 0) {
             switchActivityIntent = new Intent(this, MainActivity.class);
         }
         startActivity(switchActivityIntent);
