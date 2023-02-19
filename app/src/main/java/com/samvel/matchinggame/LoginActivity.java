@@ -34,6 +34,7 @@ public class LoginActivity extends AppCompatActivity {
         inputPassword = findViewById(R.id.inputPassword);
 
         myDB = new MyDatabaseHelper(LoginActivity.this);
+        //Cursor cursor = myDB.readAllData();
         user_username = new ArrayList<>();
         user_password = new ArrayList<>();
 
@@ -45,35 +46,34 @@ public class LoginActivity extends AppCompatActivity {
             this.finish();
         });
         btnlogin.setOnClickListener(view -> {
-            if (isEmpty(inputUsername)) inputUsername.setError("You must enter username to sign in!");
-            else if(inputUsername.getText().toString().equals("admin")){
+            if (isEmpty(inputUsername))
+                inputUsername.setError("You must enter username to sign in!");
+            else if (inputUsername.getText().toString().equals("admin")) {
                 startActivity(new Intent(this, ShowDatabase.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
-            }
-            else if (isEmpty(inputPassword)) inputPassword.setError("You must enter password to sign in!");
-            else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))){
-                MainActivity.username = inputUsername.getText().toString();
+            } else if (isEmpty(inputPassword))
+                inputPassword.setError("You must enter password to sign in!");
+            else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))) {
+                MainActivity.user_id = user_username.indexOf(inputUsername.getText().toString());
                 Toast.makeText(this, "All Right!", Toast.LENGTH_SHORT).show();
                 ScoresActivity.i = 1;
                 startActivity(new Intent(this, MainActivity.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
-            }
-            else{
+            } else {
                 Toast.makeText(this, "Input Error", Toast.LENGTH_SHORT).show();
             }
 
         });
     }
 
-    void getData(){
+    void getData() {
         Cursor cursor = myDB.readAllData();
-        if (cursor.getCount() == 0){
+        if (cursor.getCount() == 0) {
             Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
-        }
-        else{
-            while (cursor.moveToNext()){
+        } else {
+            while (cursor.moveToNext()) {
                 user_username.add(cursor.getString(1));
                 user_password.add(cursor.getString(3));
             }

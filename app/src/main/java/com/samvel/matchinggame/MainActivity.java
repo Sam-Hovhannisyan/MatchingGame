@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Game params
 
-    private int user_id;
-    public static String username = "";
+    public static int user_id;
 
     int n = 12; // Game size
     int id, width, nBestScore, tick;
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
 
-    ArrayList<String> user_ids, user_usernames, user_emails, user_passwords, user_bestscores;
+    ArrayList<String> user_ids, user_bestscores;
     ArrayList<Integer> scores = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
     ArrayList<Boolean> isClickableTrack = new ArrayList<>();
@@ -105,9 +104,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         user_ids = new ArrayList<>();
-        user_usernames = new ArrayList<>();
-        user_emails = new ArrayList<>();
-        user_passwords = new ArrayList<>();
         user_bestscores = new ArrayList<>();
 
         myDB = new MyDatabaseHelper(MainActivity.this);
@@ -133,14 +129,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(cursor.getCount() > 0){
             while (cursor.moveToNext()){
                 user_ids.add(cursor.getString(0));
-                user_usernames.add(cursor.getString(1));
-                user_emails.add(cursor.getString(2));
-                user_passwords.add(cursor.getString(3));
                 user_bestscores.add(cursor.getString(4));
             }
         }
-
-        user_id = user_usernames.indexOf(username);
 
         SharedPreferences prefs = getSharedPreferences("High_Score", MODE_PRIVATE);
         nBestScore = prefs.getInt("best-score-" + user_id, 0);
@@ -393,8 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         savePrefs.apply();
 
         myDB = new MyDatabaseHelper(MainActivity.this);
-        myDB.updateData(user_ids.get(user_id), user_usernames.get(user_id), user_emails.get(user_id), user_passwords.get(user_id), nBestScore + "");
-
+        myDB.updateBestScore(user_ids.get(user_id), nBestScore + "");
         SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
         editor.putInt("best-score-" + user_id, nBestScore);
         editor.apply();

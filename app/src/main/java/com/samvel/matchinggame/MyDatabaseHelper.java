@@ -81,6 +81,19 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
+    void updateBestScore(String row_id, String bestscore) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_BESTSCORE, bestscore);
+
+        long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
+        if (result == -1) {
+            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Updated Successfully!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     void updateData(String row_id, String username, String email, String password, String bestscore) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -89,15 +102,12 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_PASSWORD, password);
         cv.put(COLUMN_BESTSCORE, bestscore);
 
-        //System.out.println(row_id + "////////////////////////////////////////////////////////////////////////////////////////////////////");
-
         long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
         if (result == -1) {
             Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(context, "Updated Successfully!", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     void deleteOneRow(String row_id) {
