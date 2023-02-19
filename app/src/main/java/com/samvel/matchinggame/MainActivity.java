@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
 
-    ArrayList<String> user_usernames = new ArrayList<>();
+    ArrayList<String> user_ids, user_usernames, user_emails, user_passwords, user_bestscores;
     ArrayList<Integer> scores = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
     ArrayList<Boolean> isClickableTrack = new ArrayList<>();
@@ -104,6 +104,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        user_ids = new ArrayList<>();
+        user_usernames = new ArrayList<>();
+        user_emails = new ArrayList<>();
+        user_passwords = new ArrayList<>();
+        user_bestscores = new ArrayList<>();
+
         myDB = new MyDatabaseHelper(MainActivity.this);
 
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
@@ -126,7 +132,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if(cursor.getCount() > 0){
             while (cursor.moveToNext()){
+                user_ids.add(cursor.getString(0));
                 user_usernames.add(cursor.getString(1));
+                user_emails.add(cursor.getString(2));
+                user_passwords.add(cursor.getString(3));
+                user_bestscores.add(cursor.getString(4));
             }
         }
 
@@ -222,7 +232,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_3x4.setOnClickListener(v -> {
             n = 12;
-            //startDialog.cancel();
             startGame.setVisibility(View.VISIBLE);
             currentSize = "3x4";
         });
@@ -382,6 +391,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         savePrefs.putString("step_", steps);
         savePrefs.putString("time_", times);
         savePrefs.apply();
+
+        myDB = new MyDatabaseHelper(MainActivity.this);
+        myDB.updateData(user_ids.get(user_id), user_usernames.get(user_id), user_emails.get(user_id), user_passwords.get(user_id), nBestScore + "");
 
         SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
         editor.putInt("best-score-" + user_id, nBestScore);

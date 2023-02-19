@@ -17,7 +17,7 @@ import java.util.SortedMap;
 
 public class LoginActivity extends AppCompatActivity {
 
-    ArrayList<String> user_id, user_username, user_email, user_password, user_bestscore;
+    ArrayList<String> user_username, user_password;
     MyDatabaseHelper myDB;
     TextView btn;
     EditText inputUsername, inputPassword;
@@ -34,11 +34,8 @@ public class LoginActivity extends AppCompatActivity {
         inputPassword = findViewById(R.id.inputPassword);
 
         myDB = new MyDatabaseHelper(LoginActivity.this);
-        user_id = new ArrayList<>();
         user_username = new ArrayList<>();
-        user_email = new ArrayList<>();
         user_password = new ArrayList<>();
-        user_bestscore = new ArrayList<>();
 
         getData();
 
@@ -77,11 +74,8 @@ public class LoginActivity extends AppCompatActivity {
         }
         else{
             while (cursor.moveToNext()){
-                user_id.add(cursor.getString(0));
                 user_username.add(cursor.getString(1));
-                user_email.add(cursor.getString(2));
                 user_password.add(cursor.getString(3));
-                user_bestscore.add(cursor.getString(4));
             }
         }
     }
