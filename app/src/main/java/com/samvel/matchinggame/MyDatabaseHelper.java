@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 public class MyDatabaseHelper extends SQLiteOpenHelper {
 
     private Context context;
-    public static final String DATABASE_NAME = "UserReg.db";
+    public static final String DATABASE_NAME = "Test5Reg.db";
     public static final int VERSION = 1;
     public static final String TABLE_NAME = "my_library";
     public static final String COLUMN_ID = "_id";
@@ -20,6 +20,10 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_EMAIL = "reg_email";
     public static final String COLUMN_PASSWORD = "reg_password";
     public static final String COLUMN_BESTSCORE = "reg_bestscore";
+    public static final String COLUMN_SCORE = "reg_score";
+    public static final String COLUMN_SIZE = "reg_size";
+    public static final String COLUMN_STEP = "reg_step";
+    public static final String COLUMN_TIME = "reg_time";
 
     public MyDatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, VERSION);
@@ -33,7 +37,11 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USERNAME + " TEXT, " +
                 COLUMN_EMAIL + " TEXT, " +
                 COLUMN_PASSWORD + " TEXT, " +
-                COLUMN_BESTSCORE + " TEXT);";
+                COLUMN_BESTSCORE + " TEXT, " +
+                COLUMN_SCORE + " TEXT, " +
+                COLUMN_SIZE + " TEXT, " +
+                COLUMN_STEP + " TEXT, " +
+                COLUMN_TIME + " TEXT );";
         db.execSQL(query);
     }
 
@@ -43,13 +51,24 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void addUser(String username, String email, String password, String bestscore) {
+    void addUser(String username, String email, String password, String bestscore, String score, String size, String step, String time) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_USERNAME, username);
         cv.put(COLUMN_EMAIL, email);
         cv.put(COLUMN_PASSWORD, password);
         cv.put(COLUMN_BESTSCORE, bestscore);
+        cv.put(COLUMN_SCORE, score);
+        cv.put(COLUMN_SIZE, size);
+        cv.put(COLUMN_STEP, step);
+        cv.put(COLUMN_TIME, time);
+
+        long result = db.insert(TABLE_NAME,null, cv);
+        if(result == -1){
+            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
+        }else {
+            Toast.makeText(context, "Added Successfully!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     Cursor readAllData() {
@@ -69,6 +88,25 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_BESTSCORE, bestscore);
 
         // Check if data updates successfully
+
+        long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
+        if (result == -1) {
+            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Updated Successfully!", Toast.LENGTH_SHORT).show();
+        }
+    }
+    void updateReview(String row_id, String score, String size, String step, String time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_SCORE, score);
+        cv.put(COLUMN_SIZE, size);
+        cv.put(COLUMN_STEP, step);
+        cv.put(COLUMN_TIME, time);
+
+        // Check if data updates successfully
+
+        Toast.makeText(context, size, Toast.LENGTH_SHORT).show();
 
         long result = db.update(TABLE_NAME, cv, "_id=?", new String[]{row_id});
         if (result == -1) {

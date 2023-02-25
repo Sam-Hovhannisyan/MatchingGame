@@ -3,11 +3,14 @@ package com.samvel.matchinggame;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -16,7 +19,9 @@ import java.util.ArrayList;
 public class ReviewsActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
+    MyDatabaseHelper myDB;
     private String current = "";
+    private int user_id;
 
     TextView reviewsNotFound;
     ListView simpleListView;
@@ -26,6 +31,8 @@ public class ReviewsActivity extends AppCompatActivity {
     ArrayList<String> sizeList = new ArrayList<>();
     ArrayList<String> stepList = new ArrayList<>();
     ArrayList<String> timeList = new ArrayList<>();
+    ArrayList<String> user_score, user_size, user_step, user_time;
+    String sizes = "", savings = "", steps = "", times = "";
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -33,63 +40,73 @@ public class ReviewsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reviews);
 
-        SharedPreferences getPrefs = getSharedPreferences("Prefs", MODE_PRIVATE);
-        String savings = getPrefs.getString("scores_", "");
-        String sizes = getPrefs.getString("size_", "");
-        String steps = getPrefs.getString("step_", "");
-        String times = getPrefs.getString("time_", "");
-
-        for (int i = 0; i < savings.length(); i++) {
-            char c = savings.charAt(i);
-            if (c == '-') {
-                scoreList.add(current);
-                current = "";
-            } else current += c;
-        }
-        for (int i = 0; i < sizes.length(); i++) {
-            char c = sizes.charAt(i);
-            if (c == '-') {
-                sizeList.add(current);
-                current = "";
-            } else current += c;
-        }
-        for (int i = 0; i < steps.length(); i++) {
-            char c = steps.charAt(i);
-            if (c == '-') {
-                stepList.add(current);
-                current = "";
-            } else current += c;
-        }
-        for (int i = 0; i < times.length(); i++) {
-            char c = times.charAt(i);
-            if (c == '-') {
-                timeList.add(current);
-                current = "";
-            } else current += c;
-        }
-
         reviewsNotFound = findViewById(R.id.reviewsNotFound);
-        if (scoreList.isEmpty()) reviewsNotFound.setText("Reviews not found");
-        else reviewsNotFound.setVisibility(View.INVISIBLE);
-        simpleListView = findViewById(R.id.simpleListView);
-        simpleListView.setDivider(null);
-        simpleListView.setDividerHeight(0);
-        simpleListView.setEnabled(false);
+        myDB = new MyDatabaseHelper(ReviewsActivity.this);
 
-        if(scoreList.size() > 10) reviewList = new String[10];
-        else reviewList = new String[scoreList.size()];
+        user_score = new ArrayList<>();
+        user_step = new ArrayList<>();
+        user_size = new ArrayList<>();
+        user_time = new ArrayList<>();
 
-        for (int i = 0; i < reviewList.length; i++) {
-            int id = scoreList.size() - i - 1;
-            reviewList[i] = "Score:" + scoreList.get(id)
-                    + ", Table size:" + sizeList.get(id)
-                    + ", Steps:" + stepList.get(id)
-                    + ", Time:" + timeList.get(id);
+        user_id = MainActivity.user_id;
+
+        if (user_id == -1){
+            reviewsNotFound.setText("Is not available");
         }
+        else {
+            getData();
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
-                R.layout.item_view, R.id.itemTextView, reviewList);
-        simpleListView.setAdapter(arrayAdapter);
+            for (int i = 0; i < savings.length(); i++) {
+                char c = savings.charAt(i);
+                if (c == '-') {
+                    scoreList.add(current);
+                    current = "";
+                } else current += c;
+            }
+            for (int i = 0; i < sizes.length(); i++) {
+                char c = sizes.charAt(i);
+                if (c == '-') {
+                    sizeList.add(current);
+                    current = "";
+                } else current += c;
+            }
+            for (int i = 0; i < steps.length(); i++) {
+                char c = steps.charAt(i);
+                if (c == '-') {
+                    stepList.add(current);
+                    current = "";
+                } else current += c;
+            }
+            for (int i = 0; i < times.length(); i++) {
+                char c = times.charAt(i);
+                if (c == '-') {
+                    timeList.add(current);
+                    current = "";
+                } else current += c;
+            }
+
+            if (scoreList.isEmpty()) reviewsNotFound.setText("Reviews not found");
+            else reviewsNotFound.setVisibility(View.INVISIBLE);
+            simpleListView = findViewById(R.id.simpleListView);
+            simpleListView.setDivider(null);
+            simpleListView.setDividerHeight(0);
+            simpleListView.setEnabled(false);
+
+            if (scoreList.size() > 10) reviewList = new String[10];
+            else reviewList = new String[scoreList.size()];
+
+            for (int i = 0; i < reviewList.length; i++) {
+                int id = scoreList.size() - i - 1;
+                reviewList[i] = "Score:" + scoreList.get(id)
+                        + ", Table size:" + sizeList.get(id)
+                        + ", Steps:" + stepList.get(id)
+                        + ", Time:" + timeList.get(id);
+            }
+
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
+                    R.layout.item_view, R.id.itemTextView, reviewList);
+            simpleListView.setAdapter(arrayAdapter);
+        }
 
         // Navigation bar
 
@@ -107,6 +124,32 @@ public class ReviewsActivity extends AppCompatActivity {
             return true;
         });
     }
+
+    private void getData() {
+        Cursor cursor = myDB.readAllData();
+        if (cursor.getCount() == 0) {
+            Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
+        } else {
+            while (cursor.moveToNext()) {
+                user_score.add(cursor.getString(5));
+                user_size.add(cursor.getString(6));
+                user_step.add(cursor.getString(7));
+                user_time.add(cursor.getString(8));
+            }
+        }
+
+        setData();
+
+        Toast.makeText(this, "" + user_id, Toast.LENGTH_SHORT).show();
+    }
+
+    private void setData() {
+        savings = user_score.get(user_id);
+        sizes = user_size.get(user_id);
+        steps = user_step.get(user_id);
+        times = user_time.get(user_id);
+    }
+
 
     private void switchActivities(int i) {
         if (i == 0) {

@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -52,9 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int n = 12; // Game size
     int id, width, nBestScore, tick;
     int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
-    String sizes = "", savings = "", steps = "";
+    String sizes = "", savings = "", steps = "", times;
     String currentSize = "3x4";
-    String times;
     GridLayout gridLayout, layoutTime;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switcher;
@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
 
+    ArrayList<String> user_score, user_size, user_step, user_time;
     ArrayList<Integer> scores = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
     ArrayList<Boolean> isClickableTrack = new ArrayList<>();
@@ -116,16 +117,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         // Getting highest score
-
-        SharedPreferences prefs = getSharedPreferences("High_Score", MODE_PRIVATE);
-        nBestScore = prefs.getInt("best-score-" + user_id, 0);
-
-        SharedPreferences getPrefs = getSharedPreferences("Prefs", MODE_PRIVATE);
-        savings = getPrefs.getString("scores_", "");
-        sizes = getPrefs.getString("size_", "");
-        steps = getPrefs.getString("step_", "");
-        times = getPrefs.getString("time_", "");
-
 
         // Display sizes
 
@@ -244,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setTimer(i);
                 startTimer();
             }
+            if (user_id != -1) getData();
         });
 
         pauseResume.setOnClickListener(v -> {
@@ -274,6 +266,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (isVisible) layoutTime.setVisibility(View.VISIBLE);
             mTextViewCountDown.setVisibility(View.INVISIBLE);
         });
+    }
+
+    private void setData() {
+        savings = user_score.get(user_id);
+        sizes = user_size.get(user_id);
+        steps = user_step.get(user_id);
+        times = user_time.get(user_id);
+
+        //Toast.makeText(this, savings, Toast.LENGTH_SHORT).show();
+    }
+
+    private void getData() {
+        Cursor cursor = myDB.readAllData();
+
+        user_score = new ArrayList<>();
+        user_step = new ArrayList<>();
+        user_size = new ArrayList<>();
+        user_time = new ArrayList<>();
+
+        if (cursor.getCount() == 0) {
+            Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
+        } else {
+            while (cursor.moveToNext()) {
+                user_score.add(cursor.getString(5).trim());
+                user_size.add(cursor.getString(6));
+                user_step.add(cursor.getString(7));
+                user_time.add(cursor.getString(8));
+                Toast.makeText(this, cursor.getString(5), Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        setData();
+
+        //Toast.makeText(this, "" + user_id, Toast.LENGTH_SHORT).show();
     }
 
     private void switchActivities(int i) {
@@ -347,29 +373,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             score.setText("Your score:" + nScore);
             endDialog.show();
             if (isVisible) pauseTimer();
-            saveScore();
+            if (user_id != -1) saveScore();
         }
     }
 
     private void saveScore() {
+        myDB = new MyDatabaseHelper(MainActivity.this);
+
         if (nScore < 0) nScore = 0;
         savings += nScore + "-";
+        Toast.makeText(this, savings, Toast.LENGTH_SHORT).show();
         sizes += currentSize + "-";
         steps += stepCount + "-";
         times += tick + "-";
 
-        SharedPreferences.Editor savePrefs = getSharedPreferences("Prefs", MODE_PRIVATE).edit();
-        savePrefs.putString("scores_", savings);
-        savePrefs.putString("size_", sizes);
-        savePrefs.putString("step_", steps);
-        savePrefs.putString("time_", times);
-        savePrefs.apply();
-
-        myDB = new MyDatabaseHelper(MainActivity.this);
+        myDB.updateReview(user_id + 1 + "" ,savings, sizes, steps, times);
         myDB.updateBestScore(user_id + 1 + "", nBestScore + "");
-        SharedPreferences.Editor editor = getSharedPreferences("High_Score", MODE_PRIVATE).edit();
-        editor.putInt("best-score-" + user_id, nBestScore);
-        editor.apply();
     }
 
     static void randomize(ArrayList<Integer> arr) {

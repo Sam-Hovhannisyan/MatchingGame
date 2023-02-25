@@ -51,6 +51,8 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ShowDatabase.class));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 this.finish();
+            } else if (!user_username.contains(inputUsername.getText().toString())) {
+                inputUsername.setError("Username doesn't found!");
             } else if (isEmpty(inputPassword))
                 inputPassword.setError("You must enter password to sign in!");
             else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))) {

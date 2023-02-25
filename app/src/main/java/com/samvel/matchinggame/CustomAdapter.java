@@ -14,15 +14,27 @@ import java.util.ArrayList;
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder> {
 
     private Context context;
-    private ArrayList user_id, user_username, user_email, user_password, user_bestscore;
+    private ArrayList user_id, user_username, user_email, user_password, user_bestscore, user_score, user_size, user_step, user_time;
 
-    CustomAdapter (Context context, ArrayList user_id, ArrayList user_username, ArrayList user_email, ArrayList user_password, ArrayList user_bestscore){
+    CustomAdapter (Context context, ArrayList user_id,
+                   ArrayList user_username,
+                   ArrayList user_email,
+                   ArrayList user_password,
+                   ArrayList user_bestscore,
+                   ArrayList user_score,
+                   ArrayList user_size,
+                   ArrayList user_step,
+                   ArrayList user_time){
         this.context = context;
         this.user_id = user_id;
         this.user_username = user_username;
         this.user_email = user_email;
         this.user_password = user_password;
         this.user_bestscore = user_bestscore;
+        this.user_score = user_score;
+        this.user_size = user_size;
+        this.user_step = user_step;
+        this.user_time = user_time;
     }
 
     @NonNull
