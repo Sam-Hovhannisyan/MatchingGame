@@ -18,33 +18,35 @@ public class LoginActivity extends AppCompatActivity {
 
     ArrayList<String> user_username, user_password;
     MyDatabaseHelper myDB;
-    TextView btn;
+    TextView signUpBtn, forgotPassword;
     EditText inputUsername, inputPassword;
-    Button btnlogin;
+    Button logInBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        btn = findViewById(R.id.textViewSignUp);
-        btnlogin = findViewById(R.id.btnlogin);
+
+        signUpBtn = findViewById(R.id.textViewSignUp);
+        logInBtn = findViewById(R.id.btnlogin);
+        forgotPassword = findViewById(R.id.forgotPassword);
 
         inputUsername = findViewById(R.id.inputUsername);
         inputPassword = findViewById(R.id.inputPassword);
 
         myDB = new MyDatabaseHelper(LoginActivity.this);
-        //Cursor cursor = myDB.readAllData();
         user_username = new ArrayList<>();
         user_password = new ArrayList<>();
 
         getData();
 
-        btn.setOnClickListener(view -> {
+        signUpBtn.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             this.finish();
         });
-        btnlogin.setOnClickListener(view -> {
+
+        logInBtn.setOnClickListener(view -> {
             if (isEmpty(inputUsername))
                 inputUsername.setError("You must enter username to sign in!");
             else if (inputUsername.getText().toString().equals("admin")) {
@@ -64,6 +66,10 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Input Error", Toast.LENGTH_SHORT).show();
             }
+
+        });
+
+        forgotPassword.setOnClickListener(view -> {
 
         });
     }

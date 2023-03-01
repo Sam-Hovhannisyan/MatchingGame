@@ -1,11 +1,11 @@
 package com.samvel.matchinggame;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -17,25 +17,27 @@ import java.util.ArrayList;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    TextView alreadyHaveAccount, playOffline, errorText;
+    TextView logIn, playOffline;
     MyDatabaseHelper myDB;
     EditText inputUsername, inputEmail, inputPassword, inputConformPassword;
     Button btnRegister;
-    ArrayList<String> user_username = new ArrayList<>();
+    ArrayList<String> user_username, user_emails;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        user_username = new ArrayList<>();
+        user_emails = new ArrayList<>();
         // Other actions
 
-        alreadyHaveAccount = findViewById(R.id.alreadyHaveAccount);
+        logIn = findViewById(R.id.textViewLogIn);
         playOffline = findViewById(R.id.playOffline);
-        errorText = findViewById(R.id.errorText);
         myDB = new MyDatabaseHelper(RegisterActivity.this);
 
-        getUsernames();
+        getData();
 
         // Inputs
 
@@ -49,25 +51,21 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         btnRegister.setOnClickListener(view -> {
-            /*if (inputUsername.getText().toString().equals("load")) {
-                myDB.addUser("aaa".trim(), "aa@aa.com".trim(), "aa".trim(), "0".trim(), "a".trim());
-            }
-            else*/if (!checkDataEntered()) {
-                errorText.setVisibility(View.VISIBLE);
-            } else if (!inputPassword.getText().toString().equals(inputConformPassword.getText().toString())) {
-                inputConformPassword.setError("Conform password doesn't match");
-            } else if(user_username.contains(inputUsername.getText().toString())){
-                inputUsername.setError("This username is already exist!");
-            }
-            else {
-                errorText.setVisibility(View.INVISIBLE);
-                MyDatabaseHelper myDB = new MyDatabaseHelper(RegisterActivity.this);
-                myDB.addUser(inputUsername.getText().toString().trim(),
-                        inputEmail.getText().toString().trim(),
-                        inputPassword.getText().toString().trim(), "0", "", "", "", "");
-                startActivity(new Intent(this, LoginActivity.class));
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                this.finish();
+            if (checkDataEntered()) {
+                if (user_username.contains(inputUsername.getText().toString())) inputUsername.setError("This username is already exist!");
+                if (user_emails.contains(inputEmail.getText().toString())) inputEmail.setError("This email is already used!");
+                else if (!inputPassword.getText().toString().equals(inputConformPassword.getText().toString())) {
+                    inputConformPassword.setError("Conform password doesn't match");
+                }
+                 else {
+                    MyDatabaseHelper myDB = new MyDatabaseHelper(RegisterActivity.this);
+                    myDB.addUser(inputUsername.getText().toString().trim(),
+                            inputEmail.getText().toString().trim(),
+                            inputPassword.getText().toString().trim(), "0", "", "", "", "");
+                    startActivity(new Intent(this, LoginActivity.class));
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+                    this.finish();
+                }
             }
         });
 
@@ -79,7 +77,7 @@ public class RegisterActivity extends AppCompatActivity {
             this.finish();
         });
 
-        alreadyHaveAccount.setOnClickListener(view -> {
+        logIn.setOnClickListener(view -> {
             startActivity(new Intent(this, LoginActivity.class));
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             this.finish();
@@ -87,11 +85,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     }
 
-    void getUsernames(){
+    void getData(){
         Cursor cursor = myDB.readAllData();
         if (cursor.getCount() > 0){
             while (cursor.moveToNext()){
                 user_username.add(cursor.getString(1));
+                user_emails.add(cursor.getString(2));
             }
         }
     }

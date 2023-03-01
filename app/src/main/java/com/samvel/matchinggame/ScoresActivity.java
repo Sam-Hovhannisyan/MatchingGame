@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -37,7 +38,6 @@ public class ScoresActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scores);
-
         myDB = new MyDatabaseHelper(ScoresActivity.this);
         Cursor cursor = myDB.readAllData();
         tableView = findViewById(R.id.tableView);
@@ -56,7 +56,6 @@ public class ScoresActivity extends AppCompatActivity {
                     data[cursor.getPosition()][2] = cursor.getString(4);
                 }
             }
-
             tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
             tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
 
