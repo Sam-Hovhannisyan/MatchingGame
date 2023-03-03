@@ -32,7 +32,7 @@ public class LoginActivity extends AppCompatActivity {
         forgotPassword = findViewById(R.id.forgotPassword);
 
         inputUsername = findViewById(R.id.inputUsername);
-        inputPassword = findViewById(R.id.inputPassword);
+        inputPassword = findViewById(R.id.inputCode);
 
         myDB = new MyDatabaseHelper(LoginActivity.this);
         user_username = new ArrayList<>();
@@ -70,7 +70,9 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         forgotPassword.setOnClickListener(view -> {
-
+            startActivity(new Intent(this, RecoveryActivity.class));
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            this.finish();
         });
     }
 

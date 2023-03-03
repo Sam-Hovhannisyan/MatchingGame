@@ -43,7 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         inputUsername = findViewById(R.id.inputUsername);
         inputEmail = findViewById(R.id.inputEmail);
-        inputPassword = findViewById(R.id.inputPassword);
+        inputPassword = findViewById(R.id.inputCode);
         inputConformPassword = findViewById(R.id.inputConformPassword);
 
         // Buttons
