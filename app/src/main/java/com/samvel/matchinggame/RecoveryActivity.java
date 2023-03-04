@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class RecoveryActivity extends AppCompatActivity {
 
     MyDatabaseHelper myDB;
-    TextView returnBack;
+    TextView returnReg, returnLogin;
     EditText username, email, code;
     Button getCode;
     ArrayList<String> user_username, user_email;
@@ -34,7 +34,8 @@ public class RecoveryActivity extends AppCompatActivity {
         user_username = new ArrayList<>();
         user_email = new ArrayList<>();
 
-        returnBack = findViewById(R.id.textReturn);
+        returnLogin = findViewById(R.id.textReturnLogin);
+        returnReg = findViewById(R.id.textReturn);
         getCode = findViewById(R.id.btnGetCode);
         username = findViewById(R.id.inputUsername);
         email = findViewById(R.id.inputEmail);
@@ -55,14 +56,20 @@ public class RecoveryActivity extends AppCompatActivity {
                 Toast.makeText(this, mMessage, Toast.LENGTH_SHORT).show();
 
                 JavaMailAPI javaMailAPI = new JavaMailAPI(this, mEmail, mSubject, mMessage);
-                javaMailAPI.execute();
+                javaMailAPI.execute(); // https://www.youtube.com/watch?v=ZbosRfH1SnM
 
                 getCode.setText("Reset my password");
             }
         });
 
-        returnBack.setOnClickListener(view -> {
+        returnReg.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            this.finish();
+        });
+
+        returnLogin.setOnClickListener(view -> {
+            startActivity(new Intent(this, LoginActivity.class));
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             this.finish();
         });
