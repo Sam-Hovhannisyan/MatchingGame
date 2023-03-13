@@ -2,13 +2,12 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AnimationUtils;
@@ -18,13 +17,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +40,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     Intent switchActivityIntent;
-    MyDatabaseHelper myDB;
+    private DatabaseReference rootDatabaseRef;
 
     // Timer
 
@@ -48,29 +52,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Game params
 
-    public static int user_id;
+    public static String userName;
 
     int n = 12; // Game size
-    int id, width, nBestScore, tick;
+    int id, width, height, nBestScore, tick, playedGames;
     int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
-    String sizes = "", savings = "", steps = "", times;
+    String sizes, savings, steps, times;
     String currentSize = "3x4";
-    GridLayout gridLayout, layoutTime;
+    GridLayout gridLayout, layoutTime, gameSizeLayout;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switcher;
     LinearLayout timer;
     Button btn_3x4, btn_5x6, btn_4x5, startGame, playAgain, pauseResume, sec30, sec45, sec60;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     AlertDialog endDialog;
-    TextView endText, score, bestScore;
+    TextView endText, score, bestScore, layoutSizeText;
 
     boolean isStartClicked = false; // Check if start button is clicked
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
 
-    ArrayList<String> user_score, user_size, user_step, user_time;
-    ArrayList<Integer> scores = new ArrayList<>();
+    ArrayList<Integer> scoreList = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
     ArrayList<Boolean> isClickableTrack = new ArrayList<>();
     ArrayList<Integer> imageNumbers = new ArrayList<>();
@@ -100,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        myDB = new MyDatabaseHelper(MainActivity.this);
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
 
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
 
@@ -123,13 +126,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         width = displayMetrics.widthPixels;
+        height = displayMetrics.heightPixels;
 
         mTextViewCountDown = findViewById(R.id.text_view_countdown);
         timer = findViewById(R.id.timer);
 
         gridLayout = findViewById(R.id.gridLayout);
+        gameSizeLayout = findViewById(R.id.gridLayout2);
+        layoutSizeText = findViewById(R.id.layoutSizeText);
 
-        int btn_color = Color.rgb(38, 70, 83);
+        int btn_color = Color.rgb(47, 84, 99);
+        int btn_color_pressed = Color.rgb(23, 43, 51);
 
         // Alert Layout
 
@@ -180,10 +187,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sec45.setTextColor(Color.WHITE);
         sec60.setTextColor(Color.WHITE);
 
-        btn_3x4.setBackgroundColor(btn_color);
+        btn_3x4.setBackgroundColor(btn_color_pressed);
         btn_4x5.setBackgroundColor(btn_color);
         btn_5x6.setBackgroundColor(btn_color);
-        sec30.setBackgroundColor(btn_color);
+        sec30.setBackgroundColor(btn_color_pressed);
         sec45.setBackgroundColor(btn_color);
         sec60.setBackgroundColor(btn_color);
 
@@ -196,25 +203,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_3x4.setOnClickListener(v -> {
             n = 12;
-            startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
             currentSize = "3x4";
+            btn_3x4.setBackgroundColor(btn_color_pressed);
+            btn_4x5.setBackgroundColor(btn_color);
+            btn_5x6.setBackgroundColor(btn_color);
         });
 
         btn_4x5.setOnClickListener(v -> {
             n = 20;
-            startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
             currentSize = "4x5";
+            btn_3x4.setBackgroundColor(btn_color);
+            btn_4x5.setBackgroundColor(btn_color_pressed);
+            btn_5x6.setBackgroundColor(btn_color);
         });
 
         btn_5x6.setOnClickListener(v -> {
             n = 30;
-            startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
             currentSize = "3x4";
+            btn_3x4.setBackgroundColor(btn_color);
+            btn_4x5.setBackgroundColor(btn_color);
+            btn_5x6.setBackgroundColor(btn_color_pressed);
         });
 
-        sec30.setOnClickListener(v -> i = 0);
-        sec45.setOnClickListener(v -> i = 1);
-        sec60.setOnClickListener(v -> i = 2);
+        sec30.setOnClickListener(v -> {
+            i = 0;
+            sec30.setBackgroundColor(btn_color_pressed);
+            sec45.setBackgroundColor(btn_color);
+            sec60.setBackgroundColor(btn_color);
+        });
+        sec45.setOnClickListener(v -> {
+            i = 1;
+            sec30.setBackgroundColor(btn_color);
+            sec45.setBackgroundColor(btn_color_pressed);
+            sec60.setBackgroundColor(btn_color);
+        });
+        sec60.setOnClickListener(v -> {
+            i = 2;
+            sec30.setBackgroundColor(btn_color);
+            sec45.setBackgroundColor(btn_color);
+            sec60.setBackgroundColor(btn_color_pressed);
+        });
 
 
         startGame.setOnClickListener(v -> {
@@ -226,6 +257,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
             Collections.fill(isClickable, Boolean.TRUE);
             startGame.setVisibility(View.INVISIBLE);
+            gameSizeLayout.setVisibility(View.INVISIBLE);
+            layoutSizeText.setText("Good Luck 😉");
             timer.setVisibility(View.INVISIBLE);
             if (isVisible) {
                 layoutTime.setVisibility(View.INVISIBLE);
@@ -233,19 +266,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mTextViewCountDown.setVisibility(View.VISIBLE);
                 pauseResume.setText("Pause");
                 setTimer(i);
-                startTimer();
+
             }
-            if (user_id != -1) getData();
+            if (!userName.equals("-1")) {
+                getFirebaseData();
+            }
         });
 
         pauseResume.setOnClickListener(v -> {
-            if(isOnPause){
+            if (isOnPause) {
                 pauseTimer();
                 pauseResume.setText("Resume");
                 isStartClicked = false;
                 isOnPause = false;
-            }
-            else{
+            } else {
                 startTimer();
                 pauseResume.setText("Pause");
                 isStartClicked = true;
@@ -263,50 +297,87 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startGame.setVisibility(View.VISIBLE);
             pauseResume.setVisibility(View.INVISIBLE);
             timer.setVisibility(View.VISIBLE);
+            gameSizeLayout.setVisibility(View.VISIBLE);
+            layoutSizeText.setText("Choose layout size");
             if (isVisible) layoutTime.setVisibility(View.VISIBLE);
             mTextViewCountDown.setVisibility(View.INVISIBLE);
         });
     }
 
-    private void setData() {
-        savings = user_score.get(user_id);
-        sizes = user_size.get(user_id);
-        steps = user_step.get(user_id);
-        times = user_time.get(user_id);
 
-        //Toast.makeText(this, savings, Toast.LENGTH_SHORT).show();
-    }
-
-    private void getData() {
-        Cursor cursor = myDB.readAllData();
-
-        user_score = new ArrayList<>();
-        user_step = new ArrayList<>();
-        user_size = new ArrayList<>();
-        user_time = new ArrayList<>();
-
-        if (cursor.getCount() == 0) {
-            Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
-        } else {
-            while (cursor.moveToNext()) {
-                user_score.add(cursor.getString(5).trim());
-                user_size.add(cursor.getString(6));
-                user_step.add(cursor.getString(7));
-                user_time.add(cursor.getString(8));
-                Toast.makeText(this, cursor.getString(5), Toast.LENGTH_SHORT).show();
+    private void getFirebaseData() {
+        rootDatabaseRef.child(userName).child("score").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                savings = snapshot.getValue().toString();
             }
-        }
 
-        setData();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-        //Toast.makeText(this, "" + user_id, Toast.LENGTH_SHORT).show();
+            }
+        });
+        rootDatabaseRef.child(userName).child("size").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                sizes = snapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        rootDatabaseRef.child(userName).child("step").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                steps = snapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        rootDatabaseRef.child(userName).child("time").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                times = snapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        rootDatabaseRef.child(userName).child("bestScore").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                nBestScore = Integer.parseInt(snapshot.getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        rootDatabaseRef.child(userName).child("games").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                playedGames = Integer.parseInt(snapshot.getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void switchActivities(int i) {
         if (i == 1) {
             switchActivityIntent = new Intent(this, ReviewsActivity.class);
-        }
-        else if(i == 2) {
+        } else if (i == 2) {
             switchActivityIntent = new Intent(this, ScoresActivity.class);
         }
         startActivity(switchActivityIntent);
@@ -367,28 +438,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (!isVisible) k = 100;
             nScore = 200 * (i + 1) - (int) (startTimeInMillis / 400000) - tick - stepCount - k;
             if (nScore > nBestScore) nBestScore = nScore;
-            scores.add(nScore);
             endText.setText("You Win!");
             bestScore.setText("Best score:" + nBestScore);
             score.setText("Your score:" + nScore);
             endDialog.show();
+            playedGames++;
             if (isVisible) pauseTimer();
-            if (user_id != -1) saveScore();
+            if (!userName.equals("-1")) saveFirebaseScore();
         }
     }
 
-    private void saveScore() {
-        myDB = new MyDatabaseHelper(MainActivity.this);
+
+    private void saveFirebaseScore() {
+
+        String current = "";
 
         if (nScore < 0) nScore = 0;
         savings += nScore + "-";
-        Toast.makeText(this, savings, Toast.LENGTH_SHORT).show();
         sizes += currentSize + "-";
         steps += stepCount + "-";
         times += tick + "-";
 
-        myDB.updateReview(user_id + 1 + "" ,savings, sizes, steps, times);
-        myDB.updateBestScore(user_id + 1 + "", nBestScore + "");
+        for (int i = 0; i < savings.length(); i++) {
+            char c = savings.charAt(i);
+            if (c == '-') {
+                scoreList.add(Integer.valueOf(current));
+                current = "";
+            } else current += c;
+        }
+
+        Collections.sort(scoreList);
+        nBestScore = scoreList.get(scoreList.size() - 1);
+
+        rootDatabaseRef.child(userName).child("games").setValue(playedGames);
+        rootDatabaseRef.child(userName).child("score").setValue(savings);
+        rootDatabaseRef.child(userName).child("size").setValue(sizes);
+        rootDatabaseRef.child(userName).child("step").setValue(steps);
+        rootDatabaseRef.child(userName).child("time").setValue(times);
+        rootDatabaseRef.child(userName).child("bestScore").setValue(nBestScore);
+
+        Log.e("msg", "All right");
     }
 
     static void randomize(ArrayList<Integer> arr) {
@@ -459,8 +548,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             oImageView.setImageResource(R.drawable.code);
             oImageView.setOnClickListener(this);
             GridLayout.LayoutParams param = new GridLayout.LayoutParams();
-            param.height = width / column - 40;
-            param.width = width / column - 40;
+            param.height = height / (column * 2) - 70;
+            param.width = width / column - 40 - width / 60;
             param.rightMargin = 20;
             param.topMargin = 20;
             param.bottomMargin = 20;
@@ -471,7 +560,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             oImageView.setLayoutParams(param);
             gridLayout.addView(oImageView);
             imageButtons.add(i, oImageView);
-            //oImageView.startAnimation(rotation);
         }
 
     }
@@ -484,10 +572,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 updateCountDownText();
                 tick++;
             }
+
             @SuppressLint("SetTextI18n")
             @Override
             public void onFinish() {
                 endDialog.show();
+                playedGames++;
                 if (allChecked == n) {
                     score.setText("Your score: " + nScore);
                     endText.setText("You Win!");
@@ -518,7 +608,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setTimer(int i) {
-        if(i == -1) startTimeInMillis = 5000;
+        if (i == -1) startTimeInMillis = 5000;
         else if (i == 0) startTimeInMillis = 30000;
         else if (i == 1) startTimeInMillis = 45000;
         else if (i == 2) startTimeInMillis = 60000;
@@ -527,9 +617,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int minutes = (int) (mTimeLeftInMillis / 1000) / 60;
         int seconds = (int) (mTimeLeftInMillis / 1000) % 60;
         mTextViewCountDown.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
+
+        startTimer();
     }
 
-    class ImageThread extends Thread    {
+    class ImageThread extends Thread {
 
         ImageView lastImage;
         ImageView currentImage;

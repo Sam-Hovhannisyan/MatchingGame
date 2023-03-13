@@ -1,43 +1,59 @@
 package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RegisterActivity extends AppCompatActivity {
 
     TextView logIn, playOffline;
-    MyDatabaseHelper myDB;
+    private DatabaseReference rootDatabaseRef;
+    ProgressDialog progressDialog;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    boolean f;
     EditText inputUsername, inputEmail, inputPassword, inputConformPassword;
     Button btnRegister;
-    ArrayList<String> user_username, user_emails;
-
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        user_username = new ArrayList<>();
-        user_emails = new ArrayList<>();
         // Other actions
 
         logIn = findViewById(R.id.textViewLogIn);
         playOffline = findViewById(R.id.playOffline);
-        myDB = new MyDatabaseHelper(RegisterActivity.this);
-
-        getData();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+        progressDialog = new ProgressDialog(this);
 
         // Inputs
 
@@ -51,49 +67,90 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         btnRegister.setOnClickListener(view -> {
-            if (checkDataEntered()) {
-                if (user_username.contains(inputUsername.getText().toString())) inputUsername.setError("This username is already exist!");
-                if (user_emails.contains(inputEmail.getText().toString())) inputEmail.setError("This email is already used!");
-                else if (!inputPassword.getText().toString().equals(inputConformPassword.getText().toString())) {
-                    inputConformPassword.setError("Conform password doesn't match");
-                }
-                 else {
-                    MyDatabaseHelper myDB = new MyDatabaseHelper(RegisterActivity.this);
-                    myDB.addUser(inputUsername.getText().toString().trim(),
-                            inputEmail.getText().toString().trim(),
-                            inputPassword.getText().toString().trim(), "0", "", "", "", "");
-                    startActivity(new Intent(this, LoginActivity.class));
-                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                    this.finish();
-                }
-            }
+            PerforAuth();
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         });
 
         playOffline.setOnClickListener(view -> {
             ScoresActivity.i = 0;
-            MainActivity.user_id = -1;
-            startActivity(new Intent(this, MainActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            MainActivity.userName = "-1";
+            changeActivity(MainActivity.class);
         });
 
         logIn.setOnClickListener(view -> {
-            startActivity(new Intent(this, LoginActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            changeActivity(LoginActivity.class);
         });
 
     }
 
-    void getData(){
-        Cursor cursor = myDB.readAllData();
-        if (cursor.getCount() > 0){
-            while (cursor.moveToNext()){
-                user_username.add(cursor.getString(1));
-                user_emails.add(cursor.getString(2));
+    private void PerforAuth() {
+        String username = inputUsername.getText().toString();
+        String email = inputEmail.getText().toString().trim();
+        String password = inputPassword.getText().toString();
+        String conformPassword = inputConformPassword.getText().toString();
+
+        rootDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.hasChild(username)) {
+                    inputUsername.setError("This username is already used");
+                }
+                else{
+                    if(!validate(email)){
+                        inputEmail.setError("Enter email properly");
+                    }
+                    else if (password.isEmpty() || password.length() < 6){
+                        inputPassword.setError("Password length must be more than 6 symbols");
+                    } else if (!password.equals(conformPassword)) {
+                        inputConformPassword.setError("Conform password doesn't match");
+                    }
+                    else{
+                        progressDialog.setMessage("Please wait while registration completes...");
+                        progressDialog.setTitle("Registration");
+                        progressDialog.setCanceledOnTouchOutside(false);
+                        progressDialog.show();
+                        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                            if (task.isSuccessful()){
+                                progressDialog.dismiss();
+                                writeNewUser(username, email);
+                                changeActivity(LoginActivity.class);
+                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(username)
+                                        .build();
+                                user.updateProfile(profileUpdates);
+                            }
+                            else{
+                                progressDialog.dismiss();
+                                inputEmail.setError("This email is used");
+                            }
+                        });
+                    }
+                }
             }
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
+
+    private static boolean validate(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+        return matcher.matches();
+    }
+
+    private void writeNewUser(String username, String email) {
+        User user = new User(email, "0", "", "", "", "", 0);
+        rootDatabaseRef.child(username).setValue(user);
+    }
+
+    private void changeActivity(Class class_){
+        startActivity(new Intent(this, class_));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        this.finish();
+    }
+
     boolean isEmail(EditText text) {
         CharSequence email = text.getText().toString();
         return (!TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches());

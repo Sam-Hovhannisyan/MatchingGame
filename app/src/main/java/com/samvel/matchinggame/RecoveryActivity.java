@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 public class RecoveryActivity extends AppCompatActivity {
 
-    MyDatabaseHelper myDB;
     TextView returnReg, returnLogin;
     EditText username, email, code;
     Button getCode;
@@ -30,7 +29,7 @@ public class RecoveryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recovery);
 
-        myDB = new MyDatabaseHelper(RecoveryActivity.this);
+        //myDB = new MyDatabaseHelper(RecoveryActivity.this);
         user_username = new ArrayList<>();
         user_email = new ArrayList<>();
 
@@ -55,9 +54,6 @@ public class RecoveryActivity extends AppCompatActivity {
 
                 Toast.makeText(this, mMessage, Toast.LENGTH_SHORT).show();
 
-                JavaMailAPI javaMailAPI = new JavaMailAPI(this, mEmail, mSubject, mMessage);
-                javaMailAPI.execute(); // https://www.youtube.com/watch?v=ZbosRfH1SnM
-
                 getCode.setText("Reset my password");
             }
         });
@@ -76,7 +72,7 @@ public class RecoveryActivity extends AppCompatActivity {
 
     }
 
-    void getData() {
+    void getData() {/*
         Cursor cursor = myDB.readAllData();
         if (cursor.getCount() == 0) {
             Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
@@ -85,7 +81,7 @@ public class RecoveryActivity extends AppCompatActivity {
                 user_username.add(cursor.getString(1));
                 user_email.add(cursor.getString(2));
             }
-        }
+        }*/
     }
 
     boolean isEmpty(EditText text) {

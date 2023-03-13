@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "768694876301",
+    "firebase_url": "https://matching-game-s4-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "matching-game-s4",
+    "storage_bucket": "matching-game-s4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768694876301:android:42e734a48691fb62258ac4",
+        "android_client_info": {
+          "package_name": "com.samvel.matchinggame"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768694876301-cm5c6d27qleactucv4csqv6kd8b1k13d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxAJIB1dyC99OdjnNxEkFLM0XPmOgdQ9U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768694876301-cm5c6d27qleactucv4csqv6kd8b1k13d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

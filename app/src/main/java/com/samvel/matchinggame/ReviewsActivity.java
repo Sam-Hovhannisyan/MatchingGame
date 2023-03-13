@@ -2,110 +2,80 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ReviewsActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
-    MyDatabaseHelper myDB;
+    private DatabaseReference rootDatabaseRef;
     private String current = "";
-    private int user_id;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    private String userName;
 
     TextView reviewsNotFound;
     ListView simpleListView;
     // array objects
     String[] reviewList;
-    ArrayList<String > scoreList = new ArrayList<>();
-    ArrayList<String> sizeList = new ArrayList<>();
-    ArrayList<String> stepList = new ArrayList<>();
-    ArrayList<String> timeList = new ArrayList<>();
-    ArrayList<String> user_score, user_size, user_step, user_time;
-    String sizes = "", savings = "", steps = "", times = "";
+    ArrayList<String> scoreList, sizeList, stepList, timeList;
+    ArrayAdapter<String> arrayAdapter;
+    String sizes = "", scores = "", steps = "", times = "";
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "MissingInflatedId"})
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reviews);
 
         reviewsNotFound = findViewById(R.id.reviewsNotFound);
-        myDB = new MyDatabaseHelper(ReviewsActivity.this);
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+        scoreList = new ArrayList<>();
+        sizeList = new ArrayList<>();
+        stepList = new ArrayList<>();
+        timeList = new ArrayList<>();
 
-        user_score = new ArrayList<>();
-        user_step = new ArrayList<>();
-        user_size = new ArrayList<>();
-        user_time = new ArrayList<>();
-
-        user_id = MainActivity.user_id;
-
-        if (user_id == -1){
-            reviewsNotFound.setText("Is not available");
+        try {
+            userName = mUser.getDisplayName();
+        } catch (Exception e) {
+            userName = "-1";
         }
-        else {
-            getData();
 
-            for (int i = 0; i < savings.length(); i++) {
-                char c = savings.charAt(i);
-                if (c == '-') {
-                    scoreList.add(current);
-                    current = "";
-                } else current += c;
-            }
-            for (int i = 0; i < sizes.length(); i++) {
-                char c = sizes.charAt(i);
-                if (c == '-') {
-                    sizeList.add(current);
-                    current = "";
-                } else current += c;
-            }
-            for (int i = 0; i < steps.length(); i++) {
-                char c = steps.charAt(i);
-                if (c == '-') {
-                    stepList.add(current);
-                    current = "";
-                } else current += c;
-            }
-            for (int i = 0; i < times.length(); i++) {
-                char c = times.charAt(i);
-                if (c == '-') {
-                    timeList.add(current);
-                    current = "";
-                } else current += c;
-            }
+        simpleListView = findViewById(R.id.simpleListView);
+        simpleListView.setDivider(null);
+        simpleListView.setDividerHeight(0);
+        simpleListView.setEnabled(false);
 
-            if (scoreList.isEmpty()) reviewsNotFound.setText("Reviews not found");
-            else reviewsNotFound.setVisibility(View.INVISIBLE);
-            simpleListView = findViewById(R.id.simpleListView);
-            simpleListView.setDivider(null);
-            simpleListView.setDividerHeight(0);
-            simpleListView.setEnabled(false);
-
-            if (scoreList.size() > 10) reviewList = new String[10];
-            else reviewList = new String[scoreList.size()];
-
-            for (int i = 0; i < reviewList.length; i++) {
-                int id = scoreList.size() - i - 1;
-                reviewList[i] = "Score:" + scoreList.get(id)
-                        + ", Table size:" + sizeList.get(id)
-                        + ", Steps:" + stepList.get(id)
-                        + ", Time:" + timeList.get(id);
-            }
-
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
-                    R.layout.item_view, R.id.itemTextView, reviewList);
-            simpleListView.setAdapter(arrayAdapter);
+        if (!userName.equals("-1")) {
+            getFirebaseData();
+            Log.e("success", "yeaaaaaaah");
+        } else {
+            reviewsNotFound.setText("Is not available");
         }
 
         // Navigation bar
@@ -125,37 +95,93 @@ public class ReviewsActivity extends AppCompatActivity {
         });
     }
 
-    private void getData() {
-        Cursor cursor = myDB.readAllData();
-        if (cursor.getCount() == 0) {
-            Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
-        } else {
-            while (cursor.moveToNext()) {
-                user_score.add(cursor.getString(5));
-                user_size.add(cursor.getString(6));
-                user_step.add(cursor.getString(7));
-                user_time.add(cursor.getString(8));
+    private void getFirebaseData() {
+        rootDatabaseRef.child(userName).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Log.e("info", dataSnapshot.getKey());
+                    String value = dataSnapshot.getValue().toString();
+                    if (Objects.equals(dataSnapshot.getKey(), "score")) scores = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "size")) sizes = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "step")) steps = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "time")) times = value;
+
+                    if (value.equals(scores)) {
+                        for (int i = 0; i < scores.length(); i++) {
+                            char c = scores.charAt(i);
+                            if (c == '-') {
+                                scoreList.add(current);
+                                current = "";
+                            } else current += c;
+                        }
+                    } else if (value.equals(sizes)) {
+                        for (int i = 0; i < sizes.length(); i++) {
+                            char c = sizes.charAt(i);
+                            if (c == '-') {
+                                sizeList.add(current);
+                                current = "";
+                            } else current += c;
+                        }
+                    } else if (value.equals(steps)) {
+                        for (int i = 0; i < steps.length(); i++) {
+                            char c = steps.charAt(i);
+                            if (c == '-') {
+                                stepList.add(current);
+                                current = "";
+                            } else current += c;
+                        }
+                    } else if (value.equals(times)) {
+                        for (int i = 0; i < times.length(); i++) {
+                            char c = times.charAt(i);
+                            if (c == '-') {
+                                timeList.add(current);
+                                current = "";
+                            } else current += c;
+                        }
+                    }
+                }
+                Log.e("length", scoreList.size() + "");
+                if (scoreList.size() == 0) {
+                    reviewsNotFound.setVisibility(View.VISIBLE);
+                }else{
+
+                showData();
+                reviewsNotFound.setVisibility(View.INVISIBLE);
+                }
             }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void showData() {
+        if (scoreList.size() > 10) reviewList = new String[10];
+        else reviewList = new String[scoreList.size()];
+        try {
+            for (int i = 0; i < reviewList.length; i++) {
+                int id = scoreList.size() - i - 1;
+                reviewList[i] = "Score:" + scoreList.get(id)
+                        + ", Table size:" + sizeList.get(id)
+                        + ", Steps:" + stepList.get(id)
+                        + ", Time:" + timeList.get(id);
+            }
+
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
+                    R.layout.item_view, R.id.itemTextView, reviewList);
+            simpleListView.setAdapter(arrayAdapter);
+        } catch (Exception e) {
+            Log.e("havayi", "ban");
         }
-
-        setData();
-
-        Toast.makeText(this, "" + user_id, Toast.LENGTH_SHORT).show();
     }
-
-    private void setData() {
-        savings = user_score.get(user_id);
-        sizes = user_size.get(user_id);
-        steps = user_step.get(user_id);
-        times = user_time.get(user_id);
-    }
-
 
     private void switchActivities(int i) {
         if (i == 0) {
             switchActivityIntent = new Intent(this, MainActivity.class);
-        }
-        else if(i == 2) {
+        } else if (i == 2) {
             switchActivityIntent = new Intent(this, ScoresActivity.class);
         }
         startActivity(switchActivityIntent);

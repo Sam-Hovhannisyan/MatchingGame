@@ -1,27 +1,45 @@
 package com.samvel.matchinggame;
 
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LoginActivity extends AppCompatActivity {
 
-    ArrayList<String> user_username, user_password;
-    MyDatabaseHelper myDB;
+    ArrayList<String> fEmail, fPassword;
+    private DatabaseReference rootDatabaseRef;
+    ProgressDialog progressDialog;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     TextView signUpBtn, forgotPassword;
-    EditText inputUsername, inputPassword;
+    EditText inputEmail, inputPassword;
     Button logInBtn;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,61 +49,110 @@ public class LoginActivity extends AppCompatActivity {
         logInBtn = findViewById(R.id.btnlogin);
         forgotPassword = findViewById(R.id.forgotPassword);
 
-        inputUsername = findViewById(R.id.inputUsername);
+        inputEmail = findViewById(R.id.inputEmail);
         inputPassword = findViewById(R.id.inputCode);
 
-        myDB = new MyDatabaseHelper(LoginActivity.this);
-        user_username = new ArrayList<>();
-        user_password = new ArrayList<>();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        fEmail = new ArrayList<>();
+        fPassword = new ArrayList<>();
 
-        getData();
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+        progressDialog = new ProgressDialog(this);
+
+        getFirebaseData();
 
         signUpBtn.setOnClickListener(view -> {
-            startActivity(new Intent(this, RegisterActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            changeActivity(RegisterActivity.class);
         });
 
         logInBtn.setOnClickListener(view -> {
-            if (isEmpty(inputUsername))
-                inputUsername.setError("You must enter username to sign in!");
-            else if (inputUsername.getText().toString().equals("admin")) {
-                startActivity(new Intent(this, ShowDatabase.class));
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                this.finish();
-            } else if (!user_username.contains(inputUsername.getText().toString())) {
-                inputUsername.setError("Username doesn't found!");
-            } else if (isEmpty(inputPassword))
-                inputPassword.setError("You must enter password to sign in!");
-            else if (inputPassword.getText().toString().equals(user_password.get(user_username.indexOf(inputUsername.getText().toString())))) {
-                MainActivity.user_id = user_username.indexOf(inputUsername.getText().toString());
-                ScoresActivity.i = 1;
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                this.finish();
-            } else {
-                Toast.makeText(this, "Input Error", Toast.LENGTH_SHORT).show();
+            if (inputEmail.getText().toString().equals("admin")) {
+                changeActivity(ShowDatabase.class);
+            } else{
+                PerforAuth();
             }
 
         });
 
         forgotPassword.setOnClickListener(view -> {
-            startActivity(new Intent(this, RecoveryActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            changeActivity(RecoveryActivity.class);
         });
     }
 
-    void getData() {
-        Cursor cursor = myDB.readAllData();
-        if (cursor.getCount() == 0) {
-            Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();
-        } else {
-            while (cursor.moveToNext()) {
-                user_username.add(cursor.getString(1));
-                user_password.add(cursor.getString(3));
-            }
+
+    private void PerforAuth() {
+        String email = inputEmail.getText().toString().trim();
+        String password = inputPassword.getText().toString();
+
+        if(!validate(email)){
+            inputEmail.setError("Enter email properly");
         }
+        else if (password.isEmpty() || password.length() < 6){
+            inputPassword.setError("Password length must be more than 6 symbols");
+        }
+        else{
+            progressDialog.setMessage("Please wait while log in completes...");
+            progressDialog.setTitle("Log in");
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.show();
+            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                if (task.isSuccessful()){
+                    progressDialog.dismiss();
+                    changeActivity(MainActivity.class);
+                    try {
+                        mUser = mAuth.getCurrentUser();
+                        MainActivity.userName = mUser.getDisplayName();
+                        //ReviewsActivity.userName = mUser.getDisplayName();
+                    }
+                    catch (Exception e){
+                        Log.e("Sth went wrong", "line 108");
+                    }
+
+//                    MainActivity.user_id = fEmail.indexOf(inputEmail.getText().toString());
+//                    ReviewsActivity.user_id = fEmail.indexOf(inputEmail.getText().toString());
+                    ScoresActivity.i = 1;
+                    //Log.e("username", mUser.getDisplayName());
+                } else {
+                    progressDialog.dismiss();
+                    inputPassword.setError("Incorrect password!");
+                }
+            });
+
+        }
+    }
+
+    private static boolean validate(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
+        return matcher.matches();
+    }
+    private void changeActivity(Class class_){
+        startActivity(new Intent(this, class_));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        this.finish();
+    }
+
+
+    private void getFirebaseData() {
+        rootDatabaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    try {
+                        fEmail.add(dataSnapshot.child("email").getValue().toString());
+                        fPassword.add(dataSnapshot.child("password").getValue().toString());
+                        Log.e("log-in", "all right");
+                    } catch (Exception e) {
+                        Log.e("msg", "get data error");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     boolean isEmpty(EditText text) {

@@ -89,24 +89,24 @@
         android:layout_centerVertical="true"
         android:text="00:00"
         android:textColor="@android:color/black"
+        android:layout_marginTop="10sp"
         android:textSize="25sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayout2"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteY="203sp" />
+        app:layout_constraintTop_toBottomOf="@+id/layoutSizeText"
+        tools:ignore="MissingConstraints" />
 
     <GridLayout
         android:id="@+id/layoutTime"
         android:layout_width="wrap_content"
-        android:visibility="invisible"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_view_countdown"
+        app:layout_constraintTop_toBottomOf="@+id/timer"
         tools:ignore="MissingConstraints">
 
         <Button
@@ -140,7 +140,7 @@
         app:layout_constraintBottom_toTopOf="@+id/startGame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_view_countdown"
+        app:layout_constraintTop_toBottomOf="@+id/layoutSizeText"
         tools:ignore="MissingConstraints" />
 
     <Button

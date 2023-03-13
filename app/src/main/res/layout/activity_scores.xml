@@ -72,7 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="10sp"
-        app:tableView_headerColor="@color/blue"
+        app:tableView_headerColor="#906BA0C2"
         app:layout_constraintBottom_toTopOf="@id/logout"
         app:layout_constraintTop_toBottomOf="@id/bestScoresText"
         app:layout_constraintLeft_toLeftOf="parent"
