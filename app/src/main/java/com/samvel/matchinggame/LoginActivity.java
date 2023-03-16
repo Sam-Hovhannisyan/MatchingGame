@@ -120,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private static boolean validate(String emailStr) {
+    private boolean validate(String emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
         return matcher.matches();
     }

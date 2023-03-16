@@ -119,22 +119,28 @@ public class RegisterActivity extends AppCompatActivity {
                         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                             progressDialog.dismiss();
                             if (task.isSuccessful()){
-                                mUser.sendEmailVerification().addOnCompleteListener(task1 -> {
-                                    if (task1.isSuccessful()){
-                                        writeNewUser(username, email);
-                                        changeActivity(LoginActivity.class);
-                                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                                .setDisplayName(username)
-                                                .build();
-                                        user.updateProfile(profileUpdates);
-                                    }
-                                    else {
-                                        inputEmail.setError("Verification error");
-                                    }
-                                });
+                                try {
+                                    mUser.sendEmailVerification().addOnCompleteListener(task1 -> {
+                                        if (task1.isSuccessful()) {
+                                            writeNewUser(username, email);
+                                            changeActivity(LoginActivity.class);
+                                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                                    .setDisplayName(username)
+                                                    .build();
+                                            user.updateProfile(profileUpdates);
+                                        } else {
+                                            inputEmail.setError("Verification error");
+                                        }
+                                    });
+                                }
+                                catch (Exception e){
+                                    mAuth.getCurrentUser().delete();
+                                    inputEmail.setError("This email doesn't exist");
+                                }
                             }
                             else{
+
                                 inputEmail.setError("This email is used");
                             }
                         });
