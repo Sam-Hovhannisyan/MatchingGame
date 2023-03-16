@@ -80,7 +80,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-
     private void PerforAuth() {
         String email = inputEmail.getText().toString().trim();
         String password = inputPassword.getText().toString();
@@ -97,24 +96,23 @@ public class LoginActivity extends AppCompatActivity {
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                progressDialog.dismiss();
                 if (task.isSuccessful()){
-                    progressDialog.dismiss();
-                    changeActivity(MainActivity.class);
-                    try {
-                        mUser = mAuth.getCurrentUser();
-                        MainActivity.userName = mUser.getDisplayName();
-                        //ReviewsActivity.userName = mUser.getDisplayName();
+                    if (mAuth.getCurrentUser().isEmailVerified()){
+                        changeActivity(MainActivity.class);
+                        try {
+                            mUser = mAuth.getCurrentUser();
+                            MainActivity.userName = mUser.getDisplayName();
+                        }
+                        catch (Exception e){
+                            Log.e("Sth went wrong", "line 108");
+                        }
+                        ScoresActivity.i = 1;
                     }
-                    catch (Exception e){
-                        Log.e("Sth went wrong", "line 108");
+                    else {
+                        inputEmail.setError("Please verify your email");
                     }
-
-//                    MainActivity.user_id = fEmail.indexOf(inputEmail.getText().toString());
-//                    ReviewsActivity.user_id = fEmail.indexOf(inputEmail.getText().toString());
-                    ScoresActivity.i = 1;
-                    //Log.e("username", mUser.getDisplayName());
                 } else {
-                    progressDialog.dismiss();
                     inputPassword.setError("Incorrect password!");
                 }
             });

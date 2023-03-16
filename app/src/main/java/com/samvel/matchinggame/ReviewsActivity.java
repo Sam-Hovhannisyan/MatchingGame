@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,7 +39,6 @@ public class ReviewsActivity extends AppCompatActivity {
     // array objects
     String[] reviewList;
     ArrayList<String> scoreList, sizeList, stepList, timeList;
-    ArrayAdapter<String> arrayAdapter;
     String sizes = "", scores = "", steps = "", times = "";
 
     @SuppressLint({"SetTextI18n", "MissingInflatedId"})
@@ -53,8 +49,10 @@ public class ReviewsActivity extends AppCompatActivity {
 
         reviewsNotFound = findViewById(R.id.reviewsNotFound);
         rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
+
         scoreList = new ArrayList<>();
         sizeList = new ArrayList<>();
         stepList = new ArrayList<>();

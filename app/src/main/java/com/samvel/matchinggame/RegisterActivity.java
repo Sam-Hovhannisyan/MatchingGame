@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -35,7 +37,6 @@ public class RegisterActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-    boolean f;
     EditText inputUsername, inputEmail, inputPassword, inputConformPassword;
     Button btnRegister;
     public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
@@ -54,6 +55,12 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
         progressDialog = new ProgressDialog(this);
+
+        try {
+            mAuth.signOut();
+        }catch (Exception e){
+            Log.e("Sign out", "not signed in account");
+        }
 
         // Inputs
 
@@ -110,18 +117,24 @@ public class RegisterActivity extends AppCompatActivity {
                         progressDialog.setCanceledOnTouchOutside(false);
                         progressDialog.show();
                         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                            progressDialog.dismiss();
                             if (task.isSuccessful()){
-                                progressDialog.dismiss();
-                                writeNewUser(username, email);
-                                changeActivity(LoginActivity.class);
-                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(username)
-                                        .build();
-                                user.updateProfile(profileUpdates);
+                                mUser.sendEmailVerification().addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful()){
+                                        writeNewUser(username, email);
+                                        changeActivity(LoginActivity.class);
+                                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(username)
+                                                .build();
+                                        user.updateProfile(profileUpdates);
+                                    }
+                                    else {
+                                        inputEmail.setError("Verification error");
+                                    }
+                                });
                             }
                             else{
-                                progressDialog.dismiss();
                                 inputEmail.setError("This email is used");
                             }
                         });

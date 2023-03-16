@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_5x6.setOnClickListener(v -> {
             n = 30;
             if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
-            currentSize = "3x4";
+            currentSize = "5x6";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color);
             btn_5x6.setBackgroundColor(btn_color_pressed);
