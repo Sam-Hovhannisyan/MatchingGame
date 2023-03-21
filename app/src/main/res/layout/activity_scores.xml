@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg6"
+    android:background="@drawable/bg7"
     tools:context=".ScoresActivity">
 
     <TextView
@@ -12,7 +12,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Is not available"
-        android:textColor="@color/white"
+        android:shadowColor="@color/black"
+        android:shadowRadius="25"
+        android:textStyle="bold"
+        android:textColor="#E2D1A6"
         android:textSize="30sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
@@ -21,31 +24,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/blue"
-        app:itemTextColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
-
-    <Button
+    <ImageView
         android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log out"
-        android:textColor="@color/black"
-        android:background="@color/blue"
+        android:layout_width="192sp"
+        android:layout_height="45sp"
+        android:layout_marginBottom="20sp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/available"
-        app:layout_constraintVertical_bias="0.788"
-        tools:ignore="MissingConstraints" />
+        app:srcCompat="@drawable/logout" />
 
     <TextView
         android:id="@+id/bestScoresText"
@@ -54,7 +41,10 @@
         android:text="Best Scores"
         android:textSize="24sp"
         android:layout_margin="20dp"
-        android:textColor="@color/black"
+        android:shadowColor="@color/black"
+        android:shadowRadius="25"
+        android:textStyle="bold"
+        android:textColor="#E2D1A6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -79,4 +69,16 @@
         app:layout_constraintRight_toRightOf="parent"
         app:tableView_columnCount="3"
         tools:ignore="MissingConstraints" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/dark_milk"
+        app:itemTextColor="@color/black"
+        app:itemIconTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

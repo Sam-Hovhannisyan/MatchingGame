@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg2"
+    android:background="@drawable/bg7"
     tools:context=".ReviewsActivity">
 
     <TextView
@@ -12,7 +12,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Game Reviews"
-        android:textColor="@color/white"
+        android:shadowColor="@color/black"
+        android:shadowRadius="25"
+        android:textStyle="bold"
+        android:textColor="#E2D1A6"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,7 +28,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Reviews not found"
-        android:textColor="@color/white"
+        android:shadowColor="@color/black"
+        android:shadowRadius="25"
+        android:textStyle="bold"
+        android:textColor="#E2D1A6"
         android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,13 +51,13 @@
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/blue"
-        app:itemTextColor="@color/white"
+        android:background="@color/dark_milk"
+        app:itemTextColor="@color/black"
+        app:itemIconTint="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:menu="@menu/bottom_nav_menu"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,22 +5,15 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.SignInMethodQueryResult;
-
-import java.security.SecureRandom;
-import java.util.ArrayList;
 
 public class RecoveryActivity extends AppCompatActivity {
 
@@ -70,17 +63,28 @@ public class RecoveryActivity extends AppCompatActivity {
         });
 
         returnReg.setOnClickListener(view -> {
-            startActivity(new Intent(this, RegisterActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            Methods.clickSound(this);
+            returnReg.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(RegisterActivity.class);
         });
 
         returnLogin.setOnClickListener(view -> {
-            startActivity(new Intent(this, LoginActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            Methods.clickSound(this);
+            returnLogin.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(LoginActivity.class);
         });
 
+    }
+
+    private void changeActivity(Class class_) {
+        startActivity(new Intent(this, class_));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        this.finish();
+    }
+
+        @Override
+    public void onBackPressed() {
+        moveTaskToBack(false);
     }
 
 

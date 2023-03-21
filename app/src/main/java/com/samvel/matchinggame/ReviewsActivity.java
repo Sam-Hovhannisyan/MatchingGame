@@ -48,7 +48,7 @@ public class ReviewsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reviews);
 
         reviewsNotFound = findViewById(R.id.reviewsNotFound);
-        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users");
 
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
@@ -71,7 +71,7 @@ public class ReviewsActivity extends AppCompatActivity {
 
         if (!userName.equals("-1")) {
             getFirebaseData();
-            Log.e("success", "yeaaaaaaah");
+            Log.e("success", "yeah");
         } else {
             reviewsNotFound.setText("Is not available");
         }
@@ -139,7 +139,6 @@ public class ReviewsActivity extends AppCompatActivity {
                         }
                     }
                 }
-                Log.e("length", scoreList.size() + "");
                 if (scoreList.size() == 0) {
                     reviewsNotFound.setVisibility(View.VISIBLE);
                 }else{
@@ -164,15 +163,16 @@ public class ReviewsActivity extends AppCompatActivity {
                 int id = scoreList.size() - i - 1;
                 reviewList[i] = "Score:" + scoreList.get(id)
                         + ", Table size:" + sizeList.get(id)
-                        + ", Steps:" + stepList.get(id)
-                        + ", Time:" + timeList.get(id);
+                        + ",Steps:" + stepList.get(id)
+                        + ",Time:" + timeList.get(id);
+                //Log.e("step list - ", reviewList[i]);
             }
 
             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
                     R.layout.item_view, R.id.itemTextView, reviewList);
             simpleListView.setAdapter(arrayAdapter);
         } catch (Exception e) {
-            Log.e("havayi", "ban");
+            Log.e("hav", "ban");
         }
     }
 
@@ -190,5 +190,10 @@ public class ReviewsActivity extends AppCompatActivity {
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(false);
     }
 }

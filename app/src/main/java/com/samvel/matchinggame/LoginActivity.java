@@ -4,10 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,10 +35,11 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("^[A-Z\\d._%+-]+@[A-Z\\d.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     TextView signUpBtn, forgotPassword;
     EditText inputEmail, inputPassword;
     Button logInBtn;
+    ImageView backToMenu;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -48,39 +50,56 @@ public class LoginActivity extends AppCompatActivity {
         signUpBtn = findViewById(R.id.textViewSignUp);
         logInBtn = findViewById(R.id.btnlogin);
         forgotPassword = findViewById(R.id.forgotPassword);
+        backToMenu = findViewById(R.id.backToMenu);
 
         inputEmail = findViewById(R.id.inputEmail);
         inputPassword = findViewById(R.id.inputCode);
 
-        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users");
         fEmail = new ArrayList<>();
         fPassword = new ArrayList<>();
 
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
-        progressDialog = new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this, R.style.Custom);
 
         getFirebaseData();
 
         signUpBtn.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            signUpBtn.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             changeActivity(RegisterActivity.class);
+        });
+
+        backToMenu.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            backToMenu.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(MenuActivity.class);
         });
 
         logInBtn.setOnClickListener(view -> {
             if (inputEmail.getText().toString().equals("admin")) {
                 changeActivity(ShowDatabase.class);
             } else{
-                PerforAuth();
+                PerformAuth();
             }
 
         });
 
         forgotPassword.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            forgotPassword.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             changeActivity(RecoveryActivity.class);
         });
     }
 
-    private void PerforAuth() {
+    @Override
+    public void onBackPressed() {
+        changeActivity(RegisterActivity.class);
+        //moveTaskToBack(true);
+    }
+
+    private void PerformAuth() {
         String email = inputEmail.getText().toString().trim();
         String password = inputPassword.getText().toString();
 
@@ -110,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                         ScoresActivity.i = 1;
                     }
                     else {
+                        mAuth.getCurrentUser().sendEmailVerification();
                         inputEmail.setError("Please verify your email");
                     }
                 } else {
@@ -129,7 +149,6 @@ public class LoginActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         this.finish();
     }
-
 
     private void getFirebaseData() {
         rootDatabaseRef.addValueEventListener(new ValueEventListener() {
@@ -152,10 +171,4 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
-    boolean isEmpty(EditText text) {
-        CharSequence str = text.getText().toString();
-        return TextUtils.isEmpty(str);
-    }
-
 }

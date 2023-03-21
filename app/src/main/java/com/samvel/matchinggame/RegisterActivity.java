@@ -3,20 +3,21 @@ package com.samvel.matchinggame;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.Patterns;
+import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -26,21 +27,24 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import dmax.dialog.SpotsDialog;
+import io.github.muddz.styleabletoast.StyleableToast;
+
 public class RegisterActivity extends AppCompatActivity {
 
-    TextView logIn, playOffline;
+    TextView logIn;
+    ImageView backToMenu;
     private DatabaseReference rootDatabaseRef;
     ProgressDialog progressDialog;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     EditText inputUsername, inputEmail, inputPassword, inputConformPassword;
     Button btnRegister;
-    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z\\d._%+-]+@[A-Z\\d.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,15 +54,15 @@ public class RegisterActivity extends AppCompatActivity {
         // Other actions
 
         logIn = findViewById(R.id.textViewLogIn);
-        playOffline = findViewById(R.id.playOffline);
+        backToMenu = findViewById(R.id.backToMenu);
         rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
-        progressDialog = new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this, R.style.Custom);
 
         try {
             mAuth.signOut();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e("Sign out", "not signed in account");
         }
 
@@ -73,24 +77,23 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnRegister = findViewById(R.id.btnRegister);
 
-        btnRegister.setOnClickListener(view -> {
-            PerforAuth();
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        });
+        btnRegister.setOnClickListener(view -> PerformAuth());
 
-        playOffline.setOnClickListener(view -> {
-            ScoresActivity.i = 0;
-            MainActivity.userName = "-1";
-            changeActivity(MainActivity.class);
+        backToMenu.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            backToMenu.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(MenuActivity.class);
         });
 
         logIn.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            logIn.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             changeActivity(LoginActivity.class);
         });
 
     }
 
-    private void PerforAuth() {
+    private void PerformAuth() {
         String username = inputUsername.getText().toString();
         String email = inputEmail.getText().toString().trim();
         String password = inputPassword.getText().toString();
@@ -101,45 +104,42 @@ public class RegisterActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.hasChild(username)) {
                     inputUsername.setError("This username is already used");
-                }
-                else{
-                    if(!validate(email)){
+                } else {
+                    if (!validate(email)) {
                         inputEmail.setError("Enter email properly");
-                    }
-                    else if (password.isEmpty() || password.length() < 6){
+                    } else if (password.isEmpty() || password.length() < 6) {
                         inputPassword.setError("Password length must be more than 6 symbols");
                     } else if (!password.equals(conformPassword)) {
                         inputConformPassword.setError("Conform password doesn't match");
-                    }
-                    else{
+                    } else {
                         progressDialog.setMessage("Please wait while registration completes...");
                         progressDialog.setTitle("Registration");
                         progressDialog.setCanceledOnTouchOutside(false);
                         progressDialog.show();
                         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                             progressDialog.dismiss();
-                            if (task.isSuccessful()){
-                                try {
-                                    mUser.sendEmailVerification().addOnCompleteListener(task1 -> {
-                                        if (task1.isSuccessful()) {
-                                            writeNewUser(username, email);
-                                            changeActivity(LoginActivity.class);
-                                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                                    .setDisplayName(username)
-                                                    .build();
-                                            user.updateProfile(profileUpdates);
-                                        } else {
-                                            inputEmail.setError("Verification error");
-                                        }
-                                    });
-                                }
-                                catch (Exception e){
-                                    mAuth.getCurrentUser().delete();
-                                    inputEmail.setError("This email doesn't exist");
-                                }
-                            }
-                            else{
+                            if (task.isSuccessful()) {
+                                mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful()) {
+                                        writeNewUser(username, email);
+                                        StyleableToast.makeText(RegisterActivity.this, "Please check your email", Toast.LENGTH_LONG, R.style.mytoast).show();
+                                        changeActivity(LoginActivity.class);
+                                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(username)
+                                                .build();
+                                        user.updateProfile(profileUpdates);
+                                    } else {
+                                        mAuth.getCurrentUser().delete();
+                                        inputEmail.setError("Verification error");
+                                    }
+                                });
+//                                try {
+//                                } catch (Exception e) {
+//                                    mAuth.getCurrentUser().delete();
+//                                    inputEmail.setError("This email doesn't exist");
+//                                }
+                            } else {
 
                                 inputEmail.setError("This email is used");
                             }
@@ -147,11 +147,17 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
     private static boolean validate(String emailStr) {
@@ -161,50 +167,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void writeNewUser(String username, String email) {
         User user = new User(email, "0", "", "", "", "", 0);
-        rootDatabaseRef.child(username).setValue(user);
+        rootDatabaseRef.child("users").child(username).setValue(user);
     }
 
-    private void changeActivity(Class class_){
+    private void changeActivity(Class class_) {
         startActivity(new Intent(this, class_));
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         this.finish();
-    }
-
-    boolean isEmail(EditText text) {
-        CharSequence email = text.getText().toString();
-        return (!TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches());
-    }
-
-    boolean isEmpty(EditText text) {
-        CharSequence str = text.getText().toString();
-        return TextUtils.isEmpty(str);
-    }
-
-    boolean checkDataEntered() {
-        boolean f1 = true;
-        boolean f2 = true;
-        boolean f3 = true;
-        boolean f4 = true;
-        if (isEmpty(inputUsername)) {
-            inputUsername.setError("You must enter username to register!");
-            f1 = false;
-        }
-
-        if (isEmpty(inputPassword)) {
-            inputPassword.setError("Password is required!");
-            f2 = false;
-        }
-
-        if (isEmpty(inputConformPassword)) {
-            inputConformPassword.setError("Conform Password is required!");
-            f4 = false;
-        }
-
-        if (!isEmail(inputEmail)) {
-            inputEmail.setError("Enter valid email!");
-            f3 = false;
-        }
-
-        return f1 && f2 && f3 && f4;
     }
 }

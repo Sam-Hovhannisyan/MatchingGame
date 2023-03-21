@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg3"
+    android:background="@drawable/bg7"
     tools:context=".LoginActivity">
 
 
@@ -13,9 +13,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Log in"
-        android:textColor="@color/tr_black"
-        android:textSize="36sp"
+        android:shadowColor="@color/black"
+        android:shadowRadius="25"
         android:textStyle="bold"
+        android:textSize="40sp"
+        android:textColor="#E2D1A6"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -93,10 +95,13 @@
             android:id="@+id/textViewSignUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SignUp"
+            android:shadowColor="@color/black"
             android:textStyle="bold"
-            android:textColor="#75AE85"
-            android:textSize="16sp" />
+            android:shadowRadius="25"
+            android:textColor="@color/milk"
+            android:text="@string/sign_up"
+            android:textSize="16sp"
+            />
 
     </LinearLayout>
 
@@ -118,9 +123,22 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Forgot Password?"
-        android:textColor="@color/white"
+        android:shadowColor="@color/black"
+        android:textStyle="bold"
+        android:shadowRadius="25"
+        android:textColor="@color/milk"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="@+id/inputCode"
         app:layout_constraintTop_toBottomOf="@+id/inputCode" />
+
+    <ImageView
+        android:id="@+id/backToMenu"
+        android:layout_width="192sp"
+        android:layout_height="45sp"
+        android:layout_marginBottom="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/back_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

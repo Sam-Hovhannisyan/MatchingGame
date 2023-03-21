@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import de.codecrafters.tableview.TableView;
 import de.codecrafters.tableview.toolkit.SimpleTableDataAdapter;
@@ -39,9 +40,9 @@ public class ScoresActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     private String userName;
-    Button logOut;
+    ImageView logOut;
     TextView available;
-    TableView tableView;
+    TableView<String[]> tableView;
     String[] headers = {"Username", "Games", "Best Score"};
     String[][] data;
     static int i = 1;
@@ -56,7 +57,7 @@ public class ScoresActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scores);
 
-        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users");
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
         dict = new HashMap<>();
@@ -78,19 +79,20 @@ public class ScoresActivity extends AppCompatActivity {
         }
         logOut.setOnClickListener(view -> {
             mAuth.signOut();
-            startActivity(new Intent(this, RegisterActivity.class));
-            this.finish();
+            Methods.clickSound(this);
+            logOut.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(MenuActivity.class);
         });
 
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
         bottomNavBar.getMenu().getItem(2).setChecked(true);
         bottomNavBar.getMenu().getItem(1).setOnMenuItemClickListener(item -> {
-            switchActivities(1);
+            changeActivity(ReviewsActivity.class);
             bottomNavBar.getMenu().getItem(1).setChecked(true);
             return true;
         });
         bottomNavBar.getMenu().getItem(0).setOnMenuItemClickListener(item -> {
-            switchActivities(0);
+            changeActivity(MainActivity.class);
             bottomNavBar.getMenu().getItem(0).setChecked(true);
             return true;
         });
@@ -138,6 +140,12 @@ public class ScoresActivity extends AppCompatActivity {
         return sortedMap;
     }
 
+    private void changeActivity(Class class_) {
+        startActivity(new Intent(this, class_));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        this.finish();
+    }
+
     private void showData() {
         int size = user_usernames.size();
         data = new String[size][3];
@@ -151,32 +159,28 @@ public class ScoresActivity extends AppCompatActivity {
                 uScores.add(val);
             }
             try {
+                if (size > 10) size = 10;
                 for (int i = 0; i < size; i++) {
                     data[size - i - 1][0] = uNames.get(i);
                     data[size - i - 1][1] = user_games.get(user_usernames.indexOf(uNames.get(i))).toString();
                     data[size - i - 1][2] = uScores.get(i).toString();
                 }
             } catch (Exception e) {
-                Log.e("hech", "bana");
+                Log.e("hec", "bana");
             }
         }
         tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
         tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
     }
 
-    private void switchActivities(int i) {
-        if (i == 1) {
-            switchActivityIntent = new Intent(this, ReviewsActivity.class);
-        } else if (i == 0) {
-            switchActivityIntent = new Intent(this, MainActivity.class);
-        }
-        startActivity(switchActivityIntent);
-        this.finish();
-    }
-
     @Override
     public void finish() {
         super.finish();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(false);
     }
 }

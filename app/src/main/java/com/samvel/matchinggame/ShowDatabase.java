@@ -2,15 +2,11 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -18,8 +14,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
 
 public class ShowDatabase extends AppCompatActivity {
 
@@ -42,10 +36,7 @@ public class ShowDatabase extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        floatingActionButton.setOnClickListener(view -> {
-            rootDatabaseRef.removeValue();
-            //rootDatabaseRef.child("0").setValue(0);
-        });
+        floatingActionButton.setOnClickListener(view -> rootDatabaseRef.removeValue());
 
         goBack.setOnClickListener(view -> {
             startActivity(new Intent(this, RegisterActivity.class));
@@ -53,6 +44,11 @@ public class ShowDatabase extends AppCompatActivity {
             this.finish();
         });
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
 }

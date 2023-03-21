@@ -10,6 +10,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -57,21 +59,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int n = 12; // Game size
     int id, width, height, nBestScore, tick, playedGames;
     int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
-    String sizes, savings, steps, times;
+    String sizes, scores, steps, times;
     String currentSize = "3x4";
-    GridLayout gridLayout, layoutTime, gameSizeLayout;
+    GridLayout gridLayout, layoutTime, gameSizeLayout, playButtons;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     Switch switcher;
     LinearLayout timer;
-    Button btn_3x4, btn_5x6, btn_4x5, startGame, playAgain, pauseResume, sec30, sec45, sec60;
+    Button btn_3x4, btn_5x6, btn_4x5, singleplayer, multiplayer, playAgain, pauseResume, sec30, sec45, sec60;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
-    AlertDialog endDialog;
+    AlertDialog endDialog, gameDialog;
     TextView endText, score, bestScore, layoutSizeText;
 
     boolean isStartClicked = false; // Check if start button is clicked
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
+    boolean isFlipped = false;
 
     ArrayList<Integer> scoreList = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
@@ -101,9 +104,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        rootDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users");
 
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
 
@@ -118,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         });
 
+        //StyleableToast.makeText(MainActivity.this, "Well done!", Toast.LENGTH_LONG, R.style.mytoast).show();
 
         // Getting highest score
 
@@ -132,17 +137,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timer = findViewById(R.id.timer);
 
         gridLayout = findViewById(R.id.gridLayout);
+        playButtons = findViewById(R.id.playButtons);
         gameSizeLayout = findViewById(R.id.gridLayout2);
         layoutSizeText = findViewById(R.id.layoutSizeText);
 
-        int btn_color = Color.rgb(47, 84, 99);
-        int btn_color_pressed = Color.rgb(23, 43, 51);
+        int btn_color = Color.rgb(226,209,166);
+        int btn_color_pressed = Color.rgb(213,197,129);
 
         // Alert Layout
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         View theEnd = getLayoutInflater().inflate(R.layout.the_end, null);
+        View gameD = getLayoutInflater().inflate(R.layout.game_alert, null);
 
         switcher = findViewById(R.id.switcher);
         switcher.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -155,13 +162,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        startGame = findViewById(R.id.startGame);
-        startGame.setBackgroundColor(btn_color);
-        startGame.setTextColor(Color.WHITE);
+        multiplayer = findViewById(R.id.multiplayer);
+        singleplayer = findViewById(R.id.startGame);
+        singleplayer.setBackgroundColor(btn_color);
+        multiplayer.setBackgroundColor(btn_color);
+        singleplayer.setTextColor(Color.BLACK);
+        multiplayer.setTextColor(Color.BLACK);
 
         pauseResume = findViewById(R.id.pauseAndResume);
         pauseResume.setBackgroundColor(btn_color);
-        pauseResume.setTextColor(Color.WHITE);
+        pauseResume.setTextColor(Color.BLACK);
 
         playAgain = theEnd.findViewById(R.id.playAgain);
         endText = theEnd.findViewById(R.id.endText);
@@ -169,9 +179,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bestScore = theEnd.findViewById(R.id.bestScore);
 
         layoutTime = findViewById(R.id.layoutTime);
-        startGame.setBackgroundColor(btn_color);
+        singleplayer.setBackgroundColor(btn_color);
         playAgain.setBackgroundColor(btn_color);
-        playAgain.setTextColor(Color.WHITE);
+        playAgain.setTextColor(Color.BLACK);
 
         btn_3x4 = findViewById(R.id.btn_3x4);
         btn_4x5 = findViewById(R.id.btn_4x5);
@@ -180,12 +190,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sec45 = findViewById(R.id.sec45);
         sec60 = findViewById(R.id.sec60);
 
-        btn_3x4.setTextColor(Color.WHITE);
-        btn_4x5.setTextColor(Color.WHITE);
-        btn_5x6.setTextColor(Color.WHITE);
-        sec30.setTextColor(Color.WHITE);
-        sec45.setTextColor(Color.WHITE);
-        sec60.setTextColor(Color.WHITE);
+        btn_3x4.setTextColor(Color.BLACK);
+        btn_4x5.setTextColor(Color.BLACK);
+        btn_5x6.setTextColor(Color.BLACK);
+        sec30.setTextColor(Color.BLACK);
+        sec45.setTextColor(Color.BLACK);
+        sec60.setTextColor(Color.BLACK);
 
         btn_3x4.setBackgroundColor(btn_color_pressed);
         btn_4x5.setBackgroundColor(btn_color);
@@ -197,13 +207,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // End dialog
 
+        builder.setView(gameD);
+        gameDialog = builder.create();
+        gameDialog.setCancelable(false);
+
         builder.setView(theEnd);
         endDialog = builder.create();
         endDialog.setCancelable(false);
 
         btn_3x4.setOnClickListener(v -> {
             n = 12;
-            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "3x4";
             btn_3x4.setBackgroundColor(btn_color_pressed);
             btn_4x5.setBackgroundColor(btn_color);
@@ -212,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_4x5.setOnClickListener(v -> {
             n = 20;
-            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "4x5";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color_pressed);
@@ -221,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_5x6.setOnClickListener(v -> {
             n = 30;
-            if (!isStartClicked) startGame.setVisibility(View.VISIBLE);
+            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "5x6";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color);
@@ -248,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-        startGame.setOnClickListener(v -> {
+        singleplayer.setOnClickListener(v -> {
             isStartClicked = true;
             imageNumbers = new ArrayList<>();
             resetAll();
@@ -256,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
             isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
             Collections.fill(isClickable, Boolean.TRUE);
-            startGame.setVisibility(View.INVISIBLE);
+            playButtons.setVisibility(View.INVISIBLE);
             gameSizeLayout.setVisibility(View.INVISIBLE);
             layoutSizeText.setText("Good Luck 😉");
             timer.setVisibility(View.INVISIBLE);
@@ -271,6 +285,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (!userName.equals("-1")) {
                 getFirebaseData();
             }
+        });
+
+        multiplayer.setOnClickListener(v -> {
+            //gameDialog.show();
+            startActivity(new Intent(this, MenuActivity.class));
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            this.finish();
         });
 
         pauseResume.setOnClickListener(v -> {
@@ -294,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resetTimer();
             isStartClicked = false;
             gridLayout.removeAllViews();
-            startGame.setVisibility(View.VISIBLE);
+            playButtons.setVisibility(View.VISIBLE);
             pauseResume.setVisibility(View.INVISIBLE);
             timer.setVisibility(View.VISIBLE);
             gameSizeLayout.setVisibility(View.VISIBLE);
@@ -306,65 +327,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void getFirebaseData() {
-        rootDatabaseRef.child(userName).child("score").addListenerForSingleValueEvent(new ValueEventListener() {
+        rootDatabaseRef.child(userName).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                savings = snapshot.getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootDatabaseRef.child(userName).child("size").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                sizes = snapshot.getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootDatabaseRef.child(userName).child("step").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                steps = snapshot.getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootDatabaseRef.child(userName).child("time").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                times = snapshot.getValue().toString();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootDatabaseRef.child(userName).child("bestScore").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                nBestScore = Integer.parseInt(snapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        rootDatabaseRef.child(userName).child("games").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                playedGames = Integer.parseInt(snapshot.getValue().toString());
+                for (DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    Log.e("info", dataSnapshot.getKey());
+                    String value = dataSnapshot.getValue().toString();
+                    if (Objects.equals(dataSnapshot.getKey(), "score")) scores = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "size")) sizes = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "step")) steps = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "time")) times = value;
+                    else if (Objects.equals(dataSnapshot.getKey(), "games")) playedGames = Integer.parseInt(value);
+                }
             }
 
             @Override
@@ -400,7 +374,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         id = view.getId(); // Get current image id
 
         if (!checkIsImageOpen[id] && isClickable.get(id)) { // if("image is not opened" and "is image clickable")
-            setImage(id); // Change image using id
+            Animation pressAnimation = AnimationUtils.loadAnimation(this, R.anim.press);
+            Animation pullAnimation = AnimationUtils.loadAnimation(this, R.anim.pull);
+            pressAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    setImage(id); // Change image using id
+                    imageButtons.get(id).startAnimation(pullAnimation);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            imageButtons.get(id).startAnimation(pressAnimation);
+
             checkIsImageOpen[id] = true;
             if (clicked == 0) {
                 lastClicked = id;
@@ -413,12 +407,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isClickable.set(id, false);
                 isClickable.set(lastClicked, false);
                 allChecked += 2;
-                imageButtons.get(id).startAnimation(AnimationUtils.loadAnimation(
-                        getApplicationContext(), R.anim.zoom_out
-                ));
-                imageButtons.get(lastClicked).startAnimation(AnimationUtils.loadAnimation(
-                        getApplicationContext(), R.anim.zoom_out
-                ));
+                FlipThread flipThread = new FlipThread();
+                flipThread.start();
+                isAlive = true;
+
             } else {
                 ImageThread imageThread = new ImageThread();
                 ImageView[] imageViews = new ImageView[n];
@@ -442,7 +434,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bestScore.setText("Best score:" + nBestScore);
             score.setText("Your score:" + nScore);
             endDialog.show();
-            playedGames++;
             if (isVisible) pauseTimer();
             if (!userName.equals("-1")) saveFirebaseScore();
         }
@@ -452,15 +443,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void saveFirebaseScore() {
 
         String current = "";
+        playedGames++;
 
         if (nScore < 0) nScore = 0;
-        savings += nScore + "-";
+        scores += nScore + "-";
         sizes += currentSize + "-";
         steps += stepCount + "-";
         times += tick + "-";
 
-        for (int i = 0; i < savings.length(); i++) {
-            char c = savings.charAt(i);
+        for (int i = 0; i < scores.length(); i++) {
+            char c = scores.charAt(i);
             if (c == '-') {
                 scoreList.add(Integer.valueOf(current));
                 current = "";
@@ -471,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         nBestScore = scoreList.get(scoreList.size() - 1);
 
         rootDatabaseRef.child(userName).child("games").setValue(playedGames);
-        rootDatabaseRef.child(userName).child("score").setValue(savings);
+        rootDatabaseRef.child(userName).child("score").setValue(scores);
         rootDatabaseRef.child(userName).child("size").setValue(sizes);
         rootDatabaseRef.child(userName).child("step").setValue(steps);
         rootDatabaseRef.child(userName).child("time").setValue(times);
@@ -621,6 +613,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startTimer();
     }
 
+
+    class FlipThread extends Thread{
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            imageButtons.get(id).startAnimation(AnimationUtils.loadAnimation(
+                    getApplicationContext(), R.anim.zoom_out
+            ));
+            imageButtons.get(lastClicked).startAnimation(AnimationUtils.loadAnimation(
+                    getApplicationContext(), R.anim.zoom_out
+            ));
+            isAlive = false;
+        }
+    }
+
     class ImageThread extends Thread {
 
         ImageView lastImage;
@@ -633,12 +644,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            currentImage.setImageResource(R.drawable.code);
-            lastImage.setImageResource(R.drawable.code);
+            Animation pressAnimation = AnimationUtils.loadAnimation(MainActivity.this, R.anim.press);
+            Animation pullAnimation = AnimationUtils.loadAnimation(MainActivity.this, R.anim.pull);
+            pressAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    currentImage.setImageResource(R.drawable.code);
+                    lastImage.setImageResource(R.drawable.code);
+                    imageButtons.get(id).startAnimation(pullAnimation);
+                    imageButtons.get(lastClicked).startAnimation(pullAnimation);
+                    isAlive = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+
+            imageButtons.get(id).startAnimation(pressAnimation);
+            imageButtons.get(lastClicked).startAnimation(pressAnimation);
+
+
             for (int i = 0; i < n; i++) isClickable.set(i, isClickableTrack.get(i));
             checkIsImageOpen[id] = false;
             checkIsImageOpen[lastClicked] = false;
-            isAlive = false;
         }
 
         public void sendImage(ImageView[] imageViews) {
