@@ -34,4 +34,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/back_button" />
 
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="match_parent"
+        android:layout_height="450sp"
+        android:padding="10sp"
+        app:layout_constraintBottom_toTopOf="@+id/backToMenu"
+        app:layout_constraintTop_toBottomOf="@+id/logo">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/tr_white"
+            android:padding="10sp"
+            android:justificationMode="inter_word"
+            android:text="@string/how_to_play"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,12 +13,14 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
@@ -30,12 +32,14 @@ import java.util.Random;
 public class MultiplayerActivity extends AppCompatActivity implements View.OnClickListener {
 
     ImageView backToMenu;
-    TextView player1, player2;
+    TextView player1, player2, winText;
+    AlertDialog mul_end;
+    Button playAgain, exit;
     static String p1Text, p2Text;
     int n = 30; // Game size
     int turn = 0, p1guessed = 0, p2guessed = 0;
     int id, width, height, tick, activeColor, color;
-    int clicked = 0, lastClicked = -1, allChecked = 0, nScore = 0;
+    int clicked = 0, lastClicked = -1, allChecked = 0;
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     GridLayout gridLayout;
@@ -75,28 +79,50 @@ public class MultiplayerActivity extends AppCompatActivity implements View.OnCli
         activeColor = Color.rgb(255,75,68);
         color = Color.WHITE;
 
-        player1.setTextColor(activeColor);
-        player1.setTextSize(25);
+        // Alert Dialog
 
-        player1.setText(p1Text + ": 0");
-        player2.setText(p2Text + ": 0");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View mulAlert = getLayoutInflater().inflate(R.layout.multiplayer_end, null);
+
+        playAgain = mulAlert.findViewById(R.id.playAgain);
+        exit = mulAlert.findViewById(R.id.exit);
+        winText = mulAlert.findViewById(R.id.endText);
+
+        builder.setView(mulAlert);
+        mul_end = builder.create();
+        mul_end.setCancelable(false);
+
+        playAgain.setOnClickListener(view -> {
+            mul_end.cancel();
+            startGame();
+        });
+
+        exit.setOnClickListener(view -> {
+            mul_end.cancel();
+            changeActivity(MainActivity.class);
+        });
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         width = displayMetrics.widthPixels;
         height = displayMetrics.heightPixels;
-        imageNumbers = new ArrayList<>();
-        resetAll();
-        generate();
-        isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
-        isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
-        Collections.fill(isClickable, Boolean.TRUE);
+
+        startGame();
 
         backToMenu.setOnClickListener(view -> {
             Methods.clickSound(this);
             backToMenu.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             changeActivity(MenuActivity.class);
         });
+    }
+
+    private void startGame(){
+        imageNumbers = new ArrayList<>();
+        resetAll();
+        generate();
+        isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
+        isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
+        Collections.fill(isClickable, Boolean.TRUE);
     }
 
     private void generate() {
@@ -144,7 +170,15 @@ public class MultiplayerActivity extends AppCompatActivity implements View.OnCli
 
     private void resetAll() {
         tick = 0;
-        nScore = 0;
+        turn = 0;
+        p1guessed = 0;
+        p2guessed = 0;
+        player1.setText(p1Text + ": 0");
+        player2.setText(p2Text + ": 0");
+        player1.setTextColor(activeColor);
+        player1.setTextSize(25);
+        player2.setTextColor(color);
+        player2.setTextSize(20);
         checkIsImageOpen = new boolean[n];
         randomize(imageNumbers);
         for (int i = 0; i < imageButtons.toArray().length; i++) {
@@ -248,6 +282,10 @@ public class MultiplayerActivity extends AppCompatActivity implements View.OnCli
             clicked = 0;
         }
         if (allChecked == n) {
+            if (p1guessed > p2guessed) winText.setText(p1Text + " win!");
+            else if (p1guessed < p2guessed) winText.setText(p2Text + " win!");
+            else winText.setText("Draw");
+            mul_end.show();
             Toast.makeText(this, "you win", Toast.LENGTH_SHORT).show();
         }
     }

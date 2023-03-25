@@ -9,4 +9,21 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="how_to_play"><b>The meaning of the game</b>  \n
+Find all matching pictures in a short amount of action. You will need to strain your visual memory.\n\n
+
+The game has 2 game modes: \"1 PLAYER\" and \"2 PLAYER\" mode, where you can play with a friend on the same device. \n\n
+
+<b>Game mode \"<i>1 PLAYER</i>\ "</b> \n
+In <b>\"<i>1 PLAYER</i>\"</b> mode, you can play on 3 different fields: 3x4, 4x5 and 5x6. For the 5x6 mode, you get the highest score. You can also play the game for a time for which bonus points will be given. \n\n
+
+<b>Game mode \"<i>2 PLAYER</i>\ "</b> \n
+You will see a window where you must write your name and the name of a friend. After clicking on the \"Play\" button, a 5x6 field opens. For each correct answer 1 point will be assigned.
+For an incorrect answer, the turn passes to the opponent. \n
+In the end, the one with the most points wins.\n\n
+
+<b>Additional game options</b> \n
+You can register in the game using the in-game system. You will be able to see the results of your latest games and also get into the top 10 best players. Your highest score will also be saved. \n
+     <b>GOOD LUCK ☺</b>
+    </string>
 </resources>
