@@ -1,9 +1,6 @@
 package com.samvel.matchinggame;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 
 public class Methods {

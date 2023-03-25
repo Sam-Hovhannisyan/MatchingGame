@@ -16,7 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#DE8D00"
+            android:background="@color/orange"
             android:gravity="center"
             android:orientation="vertical"
             android:paddingHorizontal="10dp"
@@ -42,21 +42,13 @@
                 android:layout_marginTop="10sp"
                 android:textColor="@color/white" />
 
-            <TextView
-                android:id="@+id/bestScore"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10sp"
-                android:text=""
-                android:textColor="@color/white" />
-
             <Button
                 android:id="@+id/playAgain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="50sp"
                 android:layout_marginVertical="20sp"
-                android:text="Play again" />
+                android:text="Exit" />
 
             <androidx.constraintlayout.widget.Barrier
                 android:layout_width="match_parent"

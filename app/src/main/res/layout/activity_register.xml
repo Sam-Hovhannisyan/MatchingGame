@@ -21,7 +21,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.13" />
+        app:layout_constraintVertical_bias="0.15" />
 
     <EditText
         android:id="@+id/inputUsername"
@@ -64,10 +64,12 @@
             android:id="@+id/alreadyHaveAccount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:shadowColor="@color/white"
             android:text="Already Have an Account? "
-            android:textColor="@color/white"
+            android:textColor="@color/milk"
             android:textSize="16sp"
+            android:shadowColor="@color/black"
+            android:textStyle="bold"
+            android:shadowRadius="25"
             app:layout_constraintEnd_toEndOf="@+id/btnRegister"
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="@+id/btnRegister"
@@ -78,9 +80,8 @@
             android:layout_height="wrap_content"
             android:text="LogIn"
             android:shadowColor="@color/black"
-            android:textStyle="bold"
             android:shadowRadius="25"
-            android:textColor="@color/milk"
+            android:textColor="@color/white"
             android:textSize="16sp" />
     </LinearLayout>
 

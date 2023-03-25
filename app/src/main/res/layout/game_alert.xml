@@ -12,7 +12,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/blue"
+        android:background="@color/orange"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
@@ -22,27 +22,61 @@
             android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Choose the action"
+            android:text="Choose layout size"
             android:layout_marginBottom="10sp"
             android:textColor="@color/white"
             android:textSize="28sp"
             android:gravity="center"/>
 
-
-        <Button
-            android:id="@+id/createGame"
+        <LinearLayout
+            android:id="@+id/gridLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5sp"
-            android:text="Create a game"
-/>
+            android:layout_gravity="center">
 
-        <Button
-            android:id="@+id/joinGame"
+            <Button
+                android:id="@+id/btn_3x4"
+                android:layout_width="5sp"
+                android:layout_height="wrap_content"
+                android:layout_margin="10sp"
+                android:text="3x4" />
+
+            <Button
+                android:id="@+id/btn_4x5"
+                android:layout_width="5sp"
+                android:layout_height="wrap_content"
+                android:layout_margin="10sp"
+                android:text="4x5" />
+
+            <Button
+                android:id="@+id/btn_5x6"
+                android:layout_width="5sp"
+                android:layout_height="wrap_content"
+                android:layout_margin="10sp"
+                android:text="5x6" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/timer"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5sp"
-            android:text="Join to game" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/startGame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10sp"
+                android:text="Play"/>
+
+           <Button
+               android:id="@+id/setTimer"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_marginHorizontal="10sp"
+               android:text="Set timer"/>
+        </LinearLayout>
+
 
     </LinearLayout>
 </RelativeLayout>

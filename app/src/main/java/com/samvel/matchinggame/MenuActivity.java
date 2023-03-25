@@ -17,9 +17,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class MenuActivity extends AppCompatActivity {
 
-    TextView playButton, settingsButton, offlineButton;
+    TextView playButton, howToPlay, offlineButton,signUp, logIn;
+    MediaPlayer mediaPlayer;
     private FirebaseAuth mAuth;
-    GridLayout signUp, logIn;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -27,16 +27,15 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        mediaPlayer = MediaPlayer.create(this, R.raw.music);
+        mediaPlayer.setLooping(true);
+        //mediaPlayer.start();
+
+
         mAuth = FirebaseAuth.getInstance();
 
-        try {
-            mAuth.signOut();
-        } catch (Exception e) {
-            Log.e("Sign out", "not signed in account");
-        }
-
         playButton = findViewById(R.id.playButton);
-        settingsButton = findViewById(R.id.settingsButton);
+        howToPlay = findViewById(R.id.howToPlay);
         offlineButton = findViewById(R.id.playOfflineButton);
 
         signUp = findViewById(R.id.googleSignUp);
@@ -45,21 +44,31 @@ public class MenuActivity extends AppCompatActivity {
         playButton.setOnClickListener(view -> {
             Methods.clickSound(this);
             playButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
-            new AlertDialog.Builder(this).setMessage("If you want to play online you have to log in").setPositiveButton("Log in", (dialogInterface, i) -> {
-                changeActivity(LoginActivity.class);
-            }).setNegativeButton("Cancel", null).show();
+            if (mAuth.getCurrentUser() != null){
+                changeActivity(MainActivity.class);
+            }
+            else{
+                new AlertDialog.Builder(this).setMessage("If you want to play online you have to log in").setPositiveButton("Log in", (dialogInterface, i) -> {
+                    changeActivity(LoginActivity.class);
+                }).setNegativeButton("Cancel", null).show();
+            }
         });
 
-        settingsButton.setOnClickListener(view -> {
+        howToPlay.setOnClickListener(view -> {
             Methods.clickSound(this);
-            settingsButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            howToPlay.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(RulesActivity.class);
         });
 
         offlineButton.setOnClickListener(view -> {
             Methods.clickSound(this);
             offlineButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
-            ScoresActivity.i = 0;
             MainActivity.userName = "-1";
+            try {
+                mAuth.signOut();
+            } catch (Exception e) {
+                Log.e("Sign out", "not signed in account");
+            }
             changeActivity(MainActivity.class);
         });
 

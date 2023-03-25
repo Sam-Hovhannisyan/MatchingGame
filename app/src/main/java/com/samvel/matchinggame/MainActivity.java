@@ -14,11 +14,12 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private long startTimeInMillis;
     private TextView mTextViewCountDown;
     private CountDownTimer mCountDownTimer;
-    private boolean isVisible;
+    private boolean isVisible = false;
     private long mTimeLeftInMillis;
 
     // Game params
@@ -59,22 +60,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int n = 12; // Game size
     int id, width, height, nBestScore, tick, playedGames;
     int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
-    String sizes, scores, steps, times;
+    String sizes, scores, steps, times, p1Text, p2Text;
     String currentSize = "3x4";
-    GridLayout gridLayout, layoutTime, gameSizeLayout, playButtons;
-    @SuppressLint("UseSwitchCompatOrMaterialCode")
-    Switch switcher;
+    GridLayout gridLayout;
     LinearLayout timer;
-    Button btn_3x4, btn_5x6, btn_4x5, singleplayer, multiplayer, playAgain, pauseResume, sec30, sec45, sec60;
+    ImageView singleplayer, multiplayer;
+    Button btn_3x4, btn_5x6, btn_4x5, playAgain, pauseResume, setTimer, cancelTimer, playTimer, playGame, playMul, sec30, sec45, sec60;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
-    AlertDialog endDialog, gameDialog;
-    TextView endText, score, bestScore, layoutSizeText;
+    AlertDialog endDialog, gameDialog, timeDialog, twoPlayerDialog;
+    TextView endText, score;
+    EditText p1Edit, p2Edit;
+    LinearLayout l1, l2;
 
-    boolean isStartClicked = false; // Check if start button is clicked
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
-    boolean isFlipped = false;
 
     ArrayList<Integer> scoreList = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
@@ -137,12 +137,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timer = findViewById(R.id.timer);
 
         gridLayout = findViewById(R.id.gridLayout);
-        playButtons = findViewById(R.id.playButtons);
-        gameSizeLayout = findViewById(R.id.gridLayout2);
-        layoutSizeText = findViewById(R.id.layoutSizeText);
 
-        int btn_color = Color.rgb(226,209,166);
-        int btn_color_pressed = Color.rgb(213,197,129);
+        int btn_color = Color.rgb(226, 209, 166);
+        int btn_color_pressed = Color.rgb(213, 197, 129);
 
         // Alert Layout
 
@@ -150,45 +147,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         View theEnd = getLayoutInflater().inflate(R.layout.the_end, null);
         View gameD = getLayoutInflater().inflate(R.layout.game_alert, null);
+        View timerAlert = getLayoutInflater().inflate(R.layout.timer_alert, null);
+        View mulAlert = getLayoutInflater().inflate(R.layout.two_player_alert, null);
 
-        switcher = findViewById(R.id.switcher);
-        switcher.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                layoutTime.setVisibility(View.VISIBLE);
-                isVisible = true;
-            } else {
-                layoutTime.setVisibility(View.INVISIBLE);
-                isVisible = false;
-            }
-        });
 
-        multiplayer = findViewById(R.id.multiplayer);
         singleplayer = findViewById(R.id.startGame);
-        singleplayer.setBackgroundColor(btn_color);
-        multiplayer.setBackgroundColor(btn_color);
-        singleplayer.setTextColor(Color.BLACK);
-        multiplayer.setTextColor(Color.BLACK);
+        multiplayer = findViewById(R.id.multiplayer);
 
         pauseResume = findViewById(R.id.pauseAndResume);
         pauseResume.setBackgroundColor(btn_color);
         pauseResume.setTextColor(Color.BLACK);
 
+        // End dialog settings
+
         playAgain = theEnd.findViewById(R.id.playAgain);
         endText = theEnd.findViewById(R.id.endText);
         score = theEnd.findViewById(R.id.score);
-        bestScore = theEnd.findViewById(R.id.bestScore);
 
-        layoutTime = findViewById(R.id.layoutTime);
-        singleplayer.setBackgroundColor(btn_color);
+        // Game dialog settings
+
+        btn_3x4 = gameD.findViewById(R.id.btn_3x4);
+        btn_4x5 = gameD.findViewById(R.id.btn_4x5);
+        btn_5x6 = gameD.findViewById(R.id.btn_5x6);
+        setTimer = gameD.findViewById(R.id.setTimer);
+        playGame = gameD.findViewById(R.id.startGame);
+
+        // Timer layout settings
+
+        sec30 = timerAlert.findViewById(R.id.sec30);
+        sec45 = timerAlert.findViewById(R.id.sec45);
+        sec60 = timerAlert.findViewById(R.id.sec60);
+        playTimer = timerAlert.findViewById(R.id.startGame);
+        cancelTimer = timerAlert.findViewById(R.id.cancelTimer);
+
         playAgain.setBackgroundColor(btn_color);
         playAgain.setTextColor(Color.BLACK);
 
-        btn_3x4 = findViewById(R.id.btn_3x4);
-        btn_4x5 = findViewById(R.id.btn_4x5);
-        btn_5x6 = findViewById(R.id.btn_5x6);
-        sec30 = findViewById(R.id.sec30);
-        sec45 = findViewById(R.id.sec45);
-        sec60 = findViewById(R.id.sec60);
+        // Multiplayer dialog settings
+
+        p1Edit = mulAlert.findViewById(R.id.player1);
+        p2Edit = mulAlert.findViewById(R.id.player2);
+
+        playMul = mulAlert.findViewById(R.id.startGame);
+
+        l1 = mulAlert.findViewById(R.id.linearLayout2);
+        l2 = mulAlert.findViewById(R.id.linearLayout3);
+
+        // Button settings
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        layoutParams.setMargins(16, 8, 16, 8);
 
         btn_3x4.setTextColor(Color.BLACK);
         btn_4x5.setTextColor(Color.BLACK);
@@ -204,20 +215,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sec45.setBackgroundColor(btn_color);
         sec60.setBackgroundColor(btn_color);
 
+        btn_3x4.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+        btn_4x5.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+        btn_5x6.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+
+        layoutParams.setMargins(10, 8, 10, 8);
+
+        sec30.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+        sec45.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+        sec60.setLayoutParams(new LinearLayout.LayoutParams(width / 4, height / 16));
+
+        btn_3x4.setLayoutParams(layoutParams);
+        btn_4x5.setLayoutParams(layoutParams);
+        btn_5x6.setLayoutParams(layoutParams);
+
+        sec30.setLayoutParams(layoutParams);
+        sec45.setLayoutParams(layoutParams);
+        sec60.setLayoutParams(layoutParams);
+
 
         // End dialog
 
         builder.setView(gameD);
         gameDialog = builder.create();
-        gameDialog.setCancelable(false);
+        gameDialog.setCancelable(true);
 
         builder.setView(theEnd);
         endDialog = builder.create();
         endDialog.setCancelable(false);
 
+        builder.setView(timerAlert);
+        timeDialog = builder.create();
+        timeDialog.setCancelable(false);
+
+        builder.setView(mulAlert);
+        twoPlayerDialog = builder.create();
+        twoPlayerDialog.setCancelable(true);
+
         btn_3x4.setOnClickListener(v -> {
             n = 12;
-            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "3x4";
             btn_3x4.setBackgroundColor(btn_color_pressed);
             btn_4x5.setBackgroundColor(btn_color);
@@ -226,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_4x5.setOnClickListener(v -> {
             n = 20;
-            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "4x5";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color_pressed);
@@ -235,7 +270,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_5x6.setOnClickListener(v -> {
             n = 30;
-            if (!isStartClicked) singleplayer.setVisibility(View.VISIBLE);
             currentSize = "5x6";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color);
@@ -261,66 +295,105 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sec60.setBackgroundColor(btn_color_pressed);
         });
 
+        playMul.setOnClickListener(v -> {
+            boolean f1 = true, f2 = true;
+            p1Text = p1Edit.getText().toString().trim();
+            p2Text = p2Edit.getText().toString().trim();
+            if (p1Text.isEmpty()) {
+                f1 = false;
+                p1Edit.setError("Please input Player 1 name");
+            }
+            if (p2Text.isEmpty()) {
+                f2 = false;
+                p2Edit.setError("Please input Player 2 name");
+            }
+            if (f1 && f2) {
+                MultiplayerActivity.p1Text = p1Text;
+                MultiplayerActivity.p2Text = p2Text;
+                startActivity(new Intent(this, MultiplayerActivity.class));
+                this.finish();
+            }
+        });
 
         singleplayer.setOnClickListener(v -> {
-            isStartClicked = true;
+            Methods.clickSound(this);
+            singleplayer.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            gameDialog.show();
+        });
+
+        setTimer.setOnClickListener(v -> {
+            gameDialog.cancel();
+            timeDialog.show();
+        });
+
+        cancelTimer.setOnClickListener(v -> {
+            timeDialog.cancel();
+            gameDialog.show();
+        });
+
+        playGame.setOnClickListener(v -> {
+            gameDialog.cancel();
             imageNumbers = new ArrayList<>();
+            resetAll();
+            generate();
+            isVisible = false;
+            isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
+            isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
+            Collections.fill(isClickable, Boolean.TRUE);
+            singleplayer.setVisibility(View.INVISIBLE);
+            multiplayer.setVisibility(View.INVISIBLE);
+
+            if (!userName.equals("-1")) {
+                getFirebaseData();
+            }
+        });
+
+        playTimer.setOnClickListener(v -> {
+            timeDialog.cancel();
+            imageNumbers = new ArrayList<>();
+            isVisible = true;
             resetAll();
             generate();
             isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
             isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
             Collections.fill(isClickable, Boolean.TRUE);
-            playButtons.setVisibility(View.INVISIBLE);
-            gameSizeLayout.setVisibility(View.INVISIBLE);
-            layoutSizeText.setText("Good Luck 😉");
-            timer.setVisibility(View.INVISIBLE);
-            if (isVisible) {
-                layoutTime.setVisibility(View.INVISIBLE);
-                pauseResume.setVisibility(View.VISIBLE);
-                mTextViewCountDown.setVisibility(View.VISIBLE);
-                pauseResume.setText("Pause");
-                setTimer(i);
-
-            }
+            singleplayer.setVisibility(View.INVISIBLE);
+            multiplayer.setVisibility(View.INVISIBLE);
+            pauseResume.setVisibility(View.VISIBLE);
+            mTextViewCountDown.setVisibility(View.VISIBLE);
+            pauseResume.setText("Pause");
+            setTimer(i);
             if (!userName.equals("-1")) {
                 getFirebaseData();
             }
         });
 
         multiplayer.setOnClickListener(v -> {
-            //gameDialog.show();
-            startActivity(new Intent(this, MenuActivity.class));
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            this.finish();
+            Methods.clickSound(this);
+            multiplayer.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            twoPlayerDialog.show();
         });
 
         pauseResume.setOnClickListener(v -> {
             if (isOnPause) {
                 pauseTimer();
                 pauseResume.setText("Resume");
-                isStartClicked = false;
                 isOnPause = false;
             } else {
                 startTimer();
                 pauseResume.setText("Pause");
-                isStartClicked = true;
                 isOnPause = true;
             }
         });
 
         playAgain.setOnClickListener(v -> {
             endDialog.cancel();
-            //startDialog.show();
             resetAll();
             resetTimer();
-            isStartClicked = false;
             gridLayout.removeAllViews();
-            playButtons.setVisibility(View.VISIBLE);
+            singleplayer.setVisibility(View.VISIBLE);
+            multiplayer.setVisibility(View.VISIBLE);
             pauseResume.setVisibility(View.INVISIBLE);
-            timer.setVisibility(View.VISIBLE);
-            gameSizeLayout.setVisibility(View.VISIBLE);
-            layoutSizeText.setText("Choose layout size");
-            if (isVisible) layoutTime.setVisibility(View.VISIBLE);
             mTextViewCountDown.setVisibility(View.INVISIBLE);
         });
     }
@@ -330,14 +403,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rootDatabaseRef.child(userName).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot: snapshot.getChildren()){
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Log.e("info", dataSnapshot.getKey());
                     String value = dataSnapshot.getValue().toString();
                     if (Objects.equals(dataSnapshot.getKey(), "score")) scores = value;
                     else if (Objects.equals(dataSnapshot.getKey(), "size")) sizes = value;
                     else if (Objects.equals(dataSnapshot.getKey(), "step")) steps = value;
                     else if (Objects.equals(dataSnapshot.getKey(), "time")) times = value;
-                    else if (Objects.equals(dataSnapshot.getKey(), "games")) playedGames = Integer.parseInt(value);
+                    else if (Objects.equals(dataSnapshot.getKey(), "games"))
+                        playedGames = Integer.parseInt(value);
                 }
             }
 
@@ -368,7 +442,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressLint({"NonConstantResourceId", "UseCompatLoadingForDrawables", "SetTextI18n"})
     @Override
     public void onClick(View view) {
-        if (!isStartClicked) return;
         if (isAlive) return;
 
         id = view.getId(); // Get current image id
@@ -431,7 +504,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             nScore = 200 * (i + 1) - (int) (startTimeInMillis / 400000) - tick - stepCount - k;
             if (nScore > nBestScore) nBestScore = nScore;
             endText.setText("You Win!");
-            bestScore.setText("Best score:" + nBestScore);
             score.setText("Your score:" + nScore);
             endDialog.show();
             if (isVisible) pauseTimer();
@@ -473,18 +545,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     static void randomize(ArrayList<Integer> arr) {
-        // Creating a object for Random class
         Random r = new Random();
-
-        // Start from the last element and swap one by one. We don't
-        // need to run for the first element that's why i >
-
         for (int i = arr.toArray().length - 1; i > 0; i--) {
-
-            // Pick a random index from 0 to i
             int j = r.nextInt(i + 1);
-
-            // Swap arr[i] with the element at random index
             int temp = arr.get(i);
             arr.set(i, arr.get(j));
             arr.set(j, temp);
@@ -575,7 +638,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     endText.setText("You Win!");
                 } else {
                     score.setText("Your score: 0");
-                    bestScore.setText("Best score: " + nBestScore);
                     endText.setText("You Lose");
                 }
             }
@@ -614,7 +676,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    class FlipThread extends Thread{
+    class FlipThread extends Thread {
         @Override
         public void run() {
             try {
@@ -660,7 +722,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     imageButtons.get(lastClicked).startAnimation(pullAnimation);
                     isAlive = false;
                 }
-
                 @Override
                 public void onAnimationRepeat(Animation animation) {
 
@@ -670,16 +731,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             imageButtons.get(id).startAnimation(pressAnimation);
             imageButtons.get(lastClicked).startAnimation(pressAnimation);
 
-
             for (int i = 0; i < n; i++) isClickable.set(i, isClickableTrack.get(i));
             checkIsImageOpen[id] = false;
             checkIsImageOpen[lastClicked] = false;
         }
-
         public void sendImage(ImageView[] imageViews) {
             lastImage = imageViews[lastClicked];
             currentImage = imageViews[id];
         }
     }
-
 }

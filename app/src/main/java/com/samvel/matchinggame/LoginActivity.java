@@ -126,7 +126,6 @@ public class LoginActivity extends AppCompatActivity {
                         catch (Exception e){
                             Log.e("Sth went wrong", "line 108");
                         }
-                        ScoresActivity.i = 1;
                     }
                     else {
                         mAuth.getCurrentUser().sendEmailVerification();

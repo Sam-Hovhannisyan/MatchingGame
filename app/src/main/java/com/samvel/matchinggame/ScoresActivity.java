@@ -1,13 +1,19 @@
 package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,23 +35,16 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import de.codecrafters.tableview.TableView;
-import de.codecrafters.tableview.toolkit.SimpleTableDataAdapter;
-import de.codecrafters.tableview.toolkit.SimpleTableHeaderAdapter;
-
 public class ScoresActivity extends AppCompatActivity {
 
-    Intent switchActivityIntent;
     private DatabaseReference rootDatabaseRef;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     private String userName;
-    ImageView logOut;
+    ImageView logOut, backToMenu;
     TextView available;
-    TableView<String[]> tableView;
+    TableLayout tableLayout;
     String[] headers = {"Username", "Games", "Best Score"};
-    String[][] data;
-    static int i = 1;
     HashMap<String, Integer> dict;
     ArrayList<Integer> user_bestScores = new ArrayList<>();
     ArrayList<Integer> user_games = new ArrayList<>();
@@ -68,15 +67,20 @@ public class ScoresActivity extends AppCompatActivity {
             userName = "-1";
         }
 
-        tableView = findViewById(R.id.tableView);
+        tableLayout = findViewById(R.id.tableLayout);
         logOut = findViewById(R.id.logout);
+        backToMenu = findViewById(R.id.backToMenu);
         available = findViewById(R.id.available);
-        if (i == 0) {
-            available.setVisibility(View.VISIBLE);
-            tableView.setHeaderVisible(false);
-        } else {
-            getFirebaseData();
-        }
+
+        if(isNetworkConnected()) getFirebaseData();
+        else available.setVisibility(View.VISIBLE);
+
+        backToMenu.setOnClickListener(view -> {
+            Methods.clickSound(this);
+            backToMenu.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
+            changeActivity(MenuActivity.class);
+        });
+
         logOut.setOnClickListener(view -> {
             mAuth.signOut();
             Methods.clickSound(this);
@@ -97,6 +101,14 @@ public class ScoresActivity extends AppCompatActivity {
             return true;
         });
     }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
     private void getFirebaseData() {
         rootDatabaseRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -146,9 +158,9 @@ public class ScoresActivity extends AppCompatActivity {
         this.finish();
     }
 
+
     private void showData() {
         int size = user_usernames.size();
-        data = new String[size][3];
         ArrayList<String> uNames = new ArrayList<>();
         ArrayList<Integer> uScores = new ArrayList<>();
         if (size > 0) {
@@ -158,19 +170,39 @@ public class ScoresActivity extends AppCompatActivity {
                 uNames.add(key);
                 uScores.add(val);
             }
-            try {
-                if (size > 10) size = 10;
-                for (int i = 0; i < size; i++) {
-                    data[size - i - 1][0] = uNames.get(i);
-                    data[size - i - 1][1] = user_games.get(user_usernames.indexOf(uNames.get(i))).toString();
-                    data[size - i - 1][2] = uScores.get(i).toString();
-                }
-            } catch (Exception e) {
-                Log.e("hec", "bana");
-            }
         }
-        tableView.setHeaderAdapter(new SimpleTableHeaderAdapter(this, headers));
-        tableView.setDataAdapter(new SimpleTableDataAdapter(this, data));
+
+        Log.e("Test 170", String.valueOf(uScores));
+        // Define the number of rows and columns
+        int numRows = size + 1;
+        int numCols = 3;
+
+        // Create the rows and cells dynamically
+        for (int i = 0; i < numRows; i++) {
+            TableRow row = new TableRow(this);
+            for (int j = 0; j < numCols; j++) {
+                TextView cell = new TextView(this);
+                cell.setTextColor(Color.WHITE);
+                cell.setTextSize(20);
+                cell.setPadding(20, 20, 20, 20); // Set cell padding
+                if (i == 0) {
+                    cell.setBackgroundColor(Color.argb(100, 240,234,214));
+                    cell.setText(headers[j]);
+                } else {
+                    try {
+                        if (j == 0) cell.setText(uNames.get(numRows - i - 1));
+                        else if (j == 1)
+                            cell.setText(user_games.get(user_usernames.indexOf(uNames.get(numRows - i - 1))).toString());
+                        else if (j == 2) cell.setText(uScores.get(numRows - i - 1).toString());
+                    }catch(Exception e){
+                        Log.e("Havayi","ban");
+                    }
+
+                }
+                row.addView(cell);
+            }
+            tableLayout.addView(row);
+        }
     }
 
     @Override

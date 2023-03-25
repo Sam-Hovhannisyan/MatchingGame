@@ -11,135 +11,131 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Matching Game"
-        android:layout_marginTop="150sp"
         android:shadowColor="@color/black"
         android:shadowRadius="25"
-        android:textStyle="bold"
-        android:textSize="40sp"
+        android:text="Matching Game"
         android:textColor="#E2D1A6"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        app:layout_constraintVertical_bias="0.55"
+        app:layout_constraintBottom_toTopOf="@+id/playButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/playButton"
         android:layout_width="256dp"
         android:layout_height="60sp"
-        android:layout_marginTop="90sp"
+        android:layout_marginVertical="20sp"
+        android:background="@drawable/play_online"
         android:textSize="25sp"
-        android:background="@drawable/play_button"
+        app:layout_constraintBottom_toTopOf="@+id/playOfflineButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintStart_toStartOf="parent" />
+
     <TextView
-        android:id="@+id/settingsButton"
+        android:id="@+id/howToPlay"
         android:layout_width="256dp"
         android:layout_height="60sp"
-        android:layout_marginTop="20sp"
+        android:background="@drawable/how_to_play"
         android:textSize="25sp"
-        android:background="@drawable/settings_button"
+        app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.8"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/playButton" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/playOfflineButton"
         android:layout_width="256dp"
         android:layout_height="60sp"
-        android:layout_marginTop="20sp"
-        android:textSize="25sp"
         android:background="@drawable/play_offline"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settingsButton" />
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:shadowColor="@color/black"
-        android:shadowRadius="25"
-        android:text="Don't have an account?"
-        android:textColor="#E2D1A6"
-        android:layout_marginBottom="5sp"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/googleSignUp"
+        android:textSize="25sp"
+        android:layout_marginBottom="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/howToPlay"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-
     <GridLayout
-        android:id="@+id/googleSignUp"
+        android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="5sp"
-        app:layout_constraintBottom_toTopOf="@+id/textView7"
+        app:layout_constraintBottom_toTopOf="@+id/textView6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
         <TextView
-            android:id="@+id/textView5"
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Don't have an account?"
+            android:shadowColor="@color/black"
+            android:shadowRadius="25"
+            android:textColor="#E2D1A6"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="5sp"/>
+        <TextView
+            android:id="@+id/googleSignUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:paddingHorizontal="10sp"
+            android:paddingHorizontal="5sp"
             android:shadowColor="@color/black"
             android:shadowRadius="25"
             android:text="@string/sign_up"
-            android:textColor="@color/milk"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="28sp"
-            android:layout_height="28sp"
-            app:srcCompat="@drawable/google_icon" />
+<!--        <ImageView-->
+<!--            android:id="@+id/imageView"-->
+<!--            android:layout_width="28sp"-->
+<!--            android:layout_height="28sp"-->
+<!--            app:srcCompat="@drawable/google_icon" />-->
     </GridLayout>
 
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:shadowColor="@color/black"
-        android:layout_marginVertical="5sp"
-        android:shadowRadius="25"
-        android:text="Already have an account?"
-        android:textColor="#E2D1A6"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/googleLogIn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+
 
     <GridLayout
-        android:id="@+id/googleLogIn"
+        android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15sp"
+        android:layout_marginBottom="20sp"
         android:layout_marginTop="5sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
         <TextView
-            android:id="@+id/textView6"
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/black"
+            android:layout_marginVertical="5sp"
+            android:shadowRadius="25"
+            android:text="Already have an account?"
+            android:textColor="#E2D1A6"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/googleLogIn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:paddingHorizontal="10sp"
+            android:paddingHorizontal="5sp"
             android:shadowColor="@color/black"
             android:shadowRadius="25"
             android:text="@string/log_in"
-            android:textColor="@color/milk"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="28sp"
-            android:layout_height="28sp"
-            app:srcCompat="@drawable/google_icon" />
+<!--        <ImageView-->
+<!--            android:id="@+id/imageView1"-->
+<!--            android:layout_width="28sp"-->
+<!--            android:layout_height="28sp"-->
+<!--            app:srcCompat="@drawable/google_icon" />-->
     </GridLayout>
 
 

@@ -2,11 +2,14 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +28,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import de.codecrafters.tableview.TableView;
+
 public class ReviewsActivity extends AppCompatActivity {
 
     Intent switchActivityIntent;
@@ -35,7 +40,8 @@ public class ReviewsActivity extends AppCompatActivity {
     private String userName;
 
     TextView reviewsNotFound;
-    ListView simpleListView;
+    TableLayout tableLayout;
+    String[] headers = {"Size", "Score", "Steps", "Time"};
     // array objects
     String[] reviewList;
     ArrayList<String> scoreList, sizeList, stepList, timeList;
@@ -52,6 +58,7 @@ public class ReviewsActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
+        tableLayout = findViewById(R.id.tableLayout);
 
         scoreList = new ArrayList<>();
         sizeList = new ArrayList<>();
@@ -63,11 +70,6 @@ public class ReviewsActivity extends AppCompatActivity {
         } catch (Exception e) {
             userName = "-1";
         }
-
-        simpleListView = findViewById(R.id.simpleListView);
-        simpleListView.setDivider(null);
-        simpleListView.setDividerHeight(0);
-        simpleListView.setEnabled(false);
 
         if (!userName.equals("-1")) {
             getFirebaseData();
@@ -141,10 +143,10 @@ public class ReviewsActivity extends AppCompatActivity {
                 }
                 if (scoreList.size() == 0) {
                     reviewsNotFound.setVisibility(View.VISIBLE);
-                }else{
+                } else {
 
-                showData();
-                reviewsNotFound.setVisibility(View.INVISIBLE);
+                    showData();
+                    reviewsNotFound.setVisibility(View.INVISIBLE);
                 }
             }
 
@@ -156,23 +158,34 @@ public class ReviewsActivity extends AppCompatActivity {
     }
 
     private void showData() {
-        if (scoreList.size() > 10) reviewList = new String[10];
-        else reviewList = new String[scoreList.size()];
-        try {
-            for (int i = 0; i < reviewList.length; i++) {
-                int id = scoreList.size() - i - 1;
-                reviewList[i] = "Score:" + scoreList.get(id)
-                        + ", Table size:" + sizeList.get(id)
-                        + ",Steps:" + stepList.get(id)
-                        + ",Time:" + timeList.get(id);
-                //Log.e("step list - ", reviewList[i]);
-            }
+        int numRows = scoreList.size() + 1;
+        int numCols = 4;
+        for (int i = 0; i < numRows; i++) {
+            TableRow row = new TableRow(this);
+            for (int j = 0; j < numCols; j++) {
+                TextView cell = new TextView(this);
+                cell.setTextColor(Color.WHITE);
+                cell.setTextSize(20);
+                cell.setPadding(30, 20, 30, 20); // Set cell padding
+                if (i == 0) {
+                    cell.setBackgroundColor(Color.argb(100, 240, 234, 214));
+                    cell.setText(headers[j]);
+                } else {
+                    try {
+                        if (j == 0) cell.setText(sizeList.get(numRows - i - 1));
+                        else if (j == 1) cell.setText(scoreList.get(numRows - i - 1));
+                        else if (j == 2) cell.setText(stepList.get(numRows - i - 1));
+                        else cell.setText(timeList.get(numRows - i - 1));
+                    }
+                    catch (Exception e){
+                        Log.e("shat havayi", "ban");
+                    }
 
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
-                    R.layout.item_view, R.id.itemTextView, reviewList);
-            simpleListView.setAdapter(arrayAdapter);
-        } catch (Exception e) {
-            Log.e("hav", "ban");
+                }
+                row.addView(cell);
+            }
+            tableLayout.addView(row);
+            if (i == 10) break;
         }
     }
 
