@@ -2,7 +2,10 @@ package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
@@ -132,11 +135,18 @@ public class LoginActivity extends AppCompatActivity {
                         inputEmail.setError("Please verify your email");
                     }
                 } else {
-                    inputPassword.setError("Incorrect password!");
+                    if (isNetworkConnected()) inputPassword.setError("Incorrect password!");
+                    else inputPassword.setError("Please connect to the internet");
                 }
             });
 
         }
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     private boolean validate(String emailStr) {

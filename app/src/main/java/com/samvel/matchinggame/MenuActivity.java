@@ -45,6 +45,7 @@ public class MenuActivity extends AppCompatActivity {
             Methods.clickSound(this);
             playButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             if (mAuth.getCurrentUser() != null){
+                MainActivity.userName = mAuth.getCurrentUser().getDisplayName();
                 changeActivity(MainActivity.class);
             }
             else{
@@ -91,5 +92,10 @@ public class MenuActivity extends AppCompatActivity {
         this.finish();
     }
 
-
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this).setMessage("Do you want to leave?").setPositiveButton("Yes", (dialogInterface, i) -> {
+            this.finishAffinity();
+        }).setNegativeButton("No", null).show();
+    }
 }

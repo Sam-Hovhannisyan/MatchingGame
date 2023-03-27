@@ -19,7 +19,6 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -42,7 +41,6 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Intent switchActivityIntent;
     private DatabaseReference rootDatabaseRef;
 
     // Timer
@@ -55,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Game params
 
-    public static String userName;
+    public static String userName = "-1";
 
     int n = 12; // Game size
     int id, width, height, nBestScore, tick, playedGames;
@@ -64,11 +62,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String currentSize = "3x4";
     GridLayout gridLayout;
     LinearLayout timer;
-    ImageView singleplayer, multiplayer;
+    ImageView singleplayer, multiplayer, settings;
     Button btn_3x4, btn_5x6, btn_4x5, playAgain, pauseResume, setTimer, cancelTimer, playTimer, playGame, playMul, sec30, sec45, sec60;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     AlertDialog endDialog, gameDialog, timeDialog, twoPlayerDialog;
-    TextView endText, score;
+    TextView endText, score, logo;
     EditText p1Edit, p2Edit;
     LinearLayout l1, l2;
 
@@ -112,12 +110,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
 
         bottomNavBar.getMenu().getItem(1).setOnMenuItemClickListener(item -> {
-            switchActivities(1);
+            changeActivity(ReviewsActivity.class);
             bottomNavBar.getMenu().getItem(1).setChecked(true);
             return true;
         });
         bottomNavBar.getMenu().getItem(2).setOnMenuItemClickListener(item -> {
-            switchActivities(2);
+            changeActivity(ScoresActivity.class);
             bottomNavBar.getMenu().getItem(2).setChecked(true);
             return true;
         });
@@ -135,11 +133,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mTextViewCountDown = findViewById(R.id.text_view_countdown);
         timer = findViewById(R.id.timer);
+        logo = findViewById(R.id.logo);
 
         gridLayout = findViewById(R.id.gridLayout);
 
-        int btn_color = Color.rgb(226, 209, 166);
-        int btn_color_pressed = Color.rgb(213, 197, 129);
+
+        int action_btn_color = Color.rgb(226, 209, 166);
+        int action_btn_color_light = Color.rgb(255,236,189);
+        int btn_color = Color.rgb(148,192,192);
+        int btn_color_pressed = Color.rgb(209,239,239);
 
         // Alert Layout
 
@@ -153,9 +155,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         singleplayer = findViewById(R.id.startGame);
         multiplayer = findViewById(R.id.multiplayer);
+        settings = findViewById(R.id.settings);
 
         pauseResume = findViewById(R.id.pauseAndResume);
-        pauseResume.setBackgroundColor(btn_color);
+        pauseResume.setBackgroundColor(action_btn_color_light);
         pauseResume.setTextColor(Color.BLACK);
 
         // End dialog settings
@@ -180,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playTimer = timerAlert.findViewById(R.id.startGame);
         cancelTimer = timerAlert.findViewById(R.id.cancelTimer);
 
-        playAgain.setBackgroundColor(btn_color);
+        playAgain.setBackgroundColor(action_btn_color);
         playAgain.setTextColor(Color.BLACK);
 
         // Multiplayer dialog settings
@@ -252,6 +255,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         twoPlayerDialog = builder.create();
         twoPlayerDialog.setCancelable(true);
 
+        if (userName == "-1") settings.setVisibility(View.INVISIBLE);
+        else settings.setVisibility(View.VISIBLE);
+
+        settings.setOnClickListener(v -> {
+            changeActivity(SettingsActivity.class);
+        });
+
         btn_3x4.setOnClickListener(v -> {
             n = 12;
             currentSize = "3x4";
@@ -310,8 +320,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (f1 && f2) {
                 MultiplayerActivity.p1Text = p1Text;
                 MultiplayerActivity.p2Text = p2Text;
-                startActivity(new Intent(this, MultiplayerActivity.class));
-                this.finish();
+                changeActivity(MultiplayerActivity.class);
             }
         });
 
@@ -342,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Collections.fill(isClickable, Boolean.TRUE);
             singleplayer.setVisibility(View.INVISIBLE);
             multiplayer.setVisibility(View.INVISIBLE);
-
+            logo.setVisibility(View.INVISIBLE);
             if (!userName.equals("-1")) {
                 getFirebaseData();
             }
@@ -363,6 +372,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mTextViewCountDown.setVisibility(View.VISIBLE);
             pauseResume.setText("Pause");
             setTimer(i);
+            logo.setVisibility(View.INVISIBLE);
             if (!userName.equals("-1")) {
                 getFirebaseData();
             }
@@ -394,6 +404,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             singleplayer.setVisibility(View.VISIBLE);
             multiplayer.setVisibility(View.VISIBLE);
             pauseResume.setVisibility(View.INVISIBLE);
+            logo.setVisibility(View.VISIBLE);
             mTextViewCountDown.setVisibility(View.INVISIBLE);
         });
     }
@@ -421,17 +432,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
-
-    private void switchActivities(int i) {
-        if (i == 1) {
-            switchActivityIntent = new Intent(this, ReviewsActivity.class);
-        } else if (i == 2) {
-            switchActivityIntent = new Intent(this, ScoresActivity.class);
-        }
-        startActivity(switchActivityIntent);
-        this.finish();
-    }
-
     @Override
     public void finish() {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -443,6 +443,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (isAlive) return;
+        if (!isOnPause) return;
 
         id = view.getId(); // Get current image id
 
@@ -673,6 +674,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mTextViewCountDown.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
 
         startTimer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isVisible && isOnPause) {
+            pauseTimer();
+            pauseResume.setText("Resume");
+            isOnPause = false;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isVisible && !isOnPause) {
+            startTimer();
+            pauseResume.setText("Pause");
+            isOnPause = true;
+        }
+    }
+
+    private void changeActivity(Class class_) {
+        startActivity(new Intent(this, class_));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        this.finish();
     }
 
 

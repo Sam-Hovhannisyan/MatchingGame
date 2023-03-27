@@ -4,6 +4,7 @@
     package="com.samvel.matchinggame">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -15,6 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MatchingGame"
         tools:targetApi="31">
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"  />
         <activity
             android:name=".MainActivity"
             android:exported="true"

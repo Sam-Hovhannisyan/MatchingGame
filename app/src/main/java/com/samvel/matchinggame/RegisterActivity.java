@@ -102,7 +102,7 @@ public class RegisterActivity extends AppCompatActivity {
         rootDatabaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.hasChild(username)) {
+                if (snapshot.child("users").hasChild(username)) {
                     inputUsername.setError("This username is already used");
                 } else {
                     if (!validate(email)) {
@@ -134,11 +134,6 @@ public class RegisterActivity extends AppCompatActivity {
                                         inputEmail.setError("Verification error");
                                     }
                                 });
-//                                try {
-//                                } catch (Exception e) {
-//                                    mAuth.getCurrentUser().delete();
-//                                    inputEmail.setError("This email doesn't exist");
-//                                }
                             } else {
 
                                 inputEmail.setError("This email is used");

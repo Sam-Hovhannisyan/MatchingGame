@@ -207,6 +207,6 @@ public class ReviewsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(false);
+        //moveTaskToBack(false);
     }
 }

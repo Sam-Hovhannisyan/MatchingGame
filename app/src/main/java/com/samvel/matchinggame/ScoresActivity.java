@@ -213,6 +213,6 @@ public class ScoresActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(false);
+        //moveTaskToBack(false);
     }
 }

@@ -32,4 +32,9 @@ public class RulesActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         this.finish();
     }
+
+    @Override
+    public void onBackPressed() {
+        changeActivity(MenuActivity.class);
+    }
 }
