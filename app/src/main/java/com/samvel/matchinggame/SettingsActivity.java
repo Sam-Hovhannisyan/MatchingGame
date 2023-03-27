@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.opengl.Matrix;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -44,13 +46,13 @@ public class SettingsActivity extends AppCompatActivity {
     StorageReference storageReference;
     ProgressDialog progressDialog;
     Uri imageUri;
+    public static int bestScoreInt = 0;
     private DatabaseReference rootDatabaseRef;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     ImageView backToMenu, profileImage;
     TextView username, bestScore;
-    String usernameText, emailText, bestScoreText;
-    Button saveChanges;
+    String usernameText;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -63,14 +65,18 @@ public class SettingsActivity extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReference();
         rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
 
-        loadImage();
 
         binding.changeImage.setOnClickListener(view -> {
             selectImage();
         });
 
         binding.saveChanges.setOnClickListener(view -> {
-            uploadImage();
+            try {
+                uploadImage();
+            }catch (Exception e){
+                progressDialog.dismiss();
+                StyleableToast.makeText(this, "Changes are not found", Toast.LENGTH_LONG, R.style.mytoast).show();
+            }
         });
 
         mAuth = FirebaseAuth.getInstance();
@@ -85,7 +91,9 @@ public class SettingsActivity extends AppCompatActivity {
         // mUser.
 
         username.setText(mUser.getDisplayName());
-        bestScore.setText(mUser.getProviderId());
+        bestScore.setText(bestScoreInt + "");
+
+        loadImage();
 
         binding.deleteAccount.setOnClickListener(view -> {
             mAuth.getCurrentUser().delete().addOnCompleteListener(task -> {
@@ -113,9 +121,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void uploadImage() {
-
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Saving changes...");
+        progressDialog.setTitle("Changes");
+        progressDialog.setMessage("Saving changes...");
         progressDialog.show();
 
         storageReference = FirebaseStorage.getInstance().getReference("profile_photos/" + username.getText().toString());
@@ -163,13 +171,12 @@ public class SettingsActivity extends AppCompatActivity {
         }
         storageRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
                     Toast.makeText(this, "success!", Toast.LENGTH_SHORT).show();
+                    Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
+                    profileImage = findViewById(R.id.profileImage);
+                    profileImage.setImageBitmap(bitmap);
                 })
                 .addOnFailureListener(exception -> {
                     Toast.makeText(this, "fail", Toast.LENGTH_SHORT).show();
                 });
-        Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-        profileImage = findViewById(R.id.profileImage);
-        profileImage.setImageBitmap(bitmap);
-
     }
 }
