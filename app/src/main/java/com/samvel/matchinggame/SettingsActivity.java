@@ -70,7 +70,7 @@ public class SettingsActivity extends AppCompatActivity {
                 progressDialog.setTitle("Changes saving");
                 progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
-                new Handler().postDelayed(() -> progressDialog.dismiss(), 2000);
+                new Handler().postDelayed(() -> progressDialog.dismiss(), 2500);
             } catch (Exception e) {
                 StyleableToast.makeText(this, "Changes are not found", Toast.LENGTH_LONG, R.style.mytoast).show();
             }
@@ -170,4 +170,8 @@ public class SettingsActivity extends AppCompatActivity {
         Log.e("look2", mAuth.getCurrentUser().getPhotoUrl() + "");
     }
 
+    @Override
+    public void onBackPressed() {
+        changeActivity(MainActivity.class);
+    }
 }

@@ -167,7 +167,6 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         fEmail.add(dataSnapshot.child("email").getValue().toString());
                         fPassword.add(dataSnapshot.child("password").getValue().toString());
-                        Log.e("log-in", "all right");
                     } catch (Exception e) {
                         Log.e("msg", "get data error");
                     }

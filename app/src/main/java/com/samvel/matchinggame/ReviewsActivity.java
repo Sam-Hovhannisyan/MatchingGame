@@ -6,8 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -73,7 +71,6 @@ public class ReviewsActivity extends AppCompatActivity {
 
         if (!userName.equals("-1")) {
             getFirebaseData();
-            Log.e("success", "yeah");
         } else {
             reviewsNotFound.setText("Is not available");
         }
@@ -100,7 +97,6 @@ public class ReviewsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Log.e("info", dataSnapshot.getKey());
                     String value = dataSnapshot.getValue().toString();
                     if (Objects.equals(dataSnapshot.getKey(), "score")) scores = value;
                     else if (Objects.equals(dataSnapshot.getKey(), "size")) sizes = value;

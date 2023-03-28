@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -139,9 +138,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         int action_btn_color = Color.rgb(226, 209, 166);
-        int action_btn_color_light = Color.rgb(255,236,189);
-        int btn_color = Color.rgb(148,192,192);
-        int btn_color_pressed = Color.rgb(209,239,239);
+        int action_btn_color_light = Color.rgb(255, 236, 189);
+        int btn_color = Color.rgb(148, 192, 192);
+        int btn_color_pressed = Color.rgb(209, 239, 239);
 
         // Alert Layout
 
@@ -415,7 +414,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Log.e("info", dataSnapshot.getKey());
                     String value = dataSnapshot.getValue().toString();
                     if (Objects.equals(dataSnapshot.getKey(), "score")) scores = value;
                     else if (Objects.equals(dataSnapshot.getKey(), "size")) sizes = value;
@@ -432,6 +430,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
+
     @Override
     public void finish() {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -542,7 +541,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rootDatabaseRef.child(userName).child("time").setValue(times);
         rootDatabaseRef.child(userName).child("bestScore").setValue(nBestScore);
 
-        Log.e("msg", "All right");
     }
 
     static void randomize(ArrayList<Integer> arr) {
@@ -749,6 +747,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     imageButtons.get(lastClicked).startAnimation(pullAnimation);
                     isAlive = false;
                 }
+
                 @Override
                 public void onAnimationRepeat(Animation animation) {
 
@@ -762,6 +761,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             checkIsImageOpen[id] = false;
             checkIsImageOpen[lastClicked] = false;
         }
+
         public void sendImage(ImageView[] imageViews) {
             lastImage = imageViews[lastClicked];
             currentImage = imageViews[id];

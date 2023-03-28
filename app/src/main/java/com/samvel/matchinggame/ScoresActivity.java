@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -122,7 +121,6 @@ public class ScoresActivity extends AppCompatActivity {
                     dict.put(user_usernames.get(j), user_bestScores.get(j));
                 }
                 dict = sortDictionary(dict);
-                Log.e("this", dict + "");
                 showData();
             }
 
@@ -172,7 +170,6 @@ public class ScoresActivity extends AppCompatActivity {
             }
         }
 
-        Log.e("Test 170", String.valueOf(uScores));
         // Define the number of rows and columns
         int numRows = size + 1;
         int numCols = 3;

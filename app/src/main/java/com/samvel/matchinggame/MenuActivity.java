@@ -59,7 +59,6 @@ public class MenuActivity extends AppCompatActivity {
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()){
                             String value = dataSnapshot.getValue().toString();
                             if (Objects.equals(dataSnapshot.getKey(), "bestScore")) SettingsActivity.bestScoreInt = Integer.parseInt(value);
-                            Log.e("Settings", dataSnapshot.getKey());
                         }
                     }
 
