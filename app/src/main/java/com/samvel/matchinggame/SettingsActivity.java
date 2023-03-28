@@ -1,42 +1,34 @@
 package com.samvel.matchinggame;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.opengl.Matrix;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.samvel.matchinggame.databinding.ActivityMainBinding;
 import com.samvel.matchinggame.databinding.ActivitySettingsBinding;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import io.github.muddz.styleabletoast.StyleableToast;
 
@@ -47,6 +39,8 @@ public class SettingsActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     Uri imageUri;
     public static int bestScoreInt = 0;
+    public static final int KITKAT_VALUE = 1002;
+    private static final int MAX_IMAGE_SIZE = 1536 * 1536;
     private DatabaseReference rootDatabaseRef;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
@@ -66,15 +60,18 @@ public class SettingsActivity extends AppCompatActivity {
         rootDatabaseRef = FirebaseDatabase.getInstance().getReference();
 
 
-        binding.changeImage.setOnClickListener(view -> {
-            selectImage();
-        });
+        binding.changeImage.setOnClickListener(view -> selectImage());
 
         binding.saveChanges.setOnClickListener(view -> {
             try {
-                uploadImage();
-            }catch (Exception e){
-                progressDialog.dismiss();
+                saveImage();
+                progressDialog = new ProgressDialog(this);
+                progressDialog.setMessage("Please wait while data is saving...");
+                progressDialog.setTitle("Changes saving");
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.show();
+                new Handler().postDelayed(() -> progressDialog.dismiss(), 2000);
+            } catch (Exception e) {
                 StyleableToast.makeText(this, "Changes are not found", Toast.LENGTH_LONG, R.style.mytoast).show();
             }
         });
@@ -95,23 +92,19 @@ public class SettingsActivity extends AppCompatActivity {
 
         loadImage();
 
-        binding.deleteAccount.setOnClickListener(view -> {
-            mAuth.getCurrentUser().delete().addOnCompleteListener(task -> {
-                if (task.isSuccessful()){
-                    StyleableToast.makeText(this, "Account was deleted successfully", Toast.LENGTH_LONG, R.style.mytoast).show();
-                    rootDatabaseRef.child("users").child(usernameText).removeValue();
-                    changeActivity(MenuActivity.class);
-                }
-            });
-        });
+        binding.deleteAccount.setOnClickListener(view -> new AlertDialog.Builder(this).setMessage("Do you want to delete your account?").setPositiveButton("Yes", (dialogInterface, i) -> mAuth.getCurrentUser().delete().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                StyleableToast.makeText(this, "Account was deleted successfully", Toast.LENGTH_LONG, R.style.mytoast).show();
+                rootDatabaseRef.child("users").child(usernameText).removeValue();
+                changeActivity(MenuActivity.class);
+            }
+        })).setNegativeButton("No", null).show());
 
-        binding.changePassword.setOnClickListener(view -> {
-            mAuth.sendPasswordResetEmail(mAuth.getCurrentUser().getEmail()).addOnCompleteListener(task -> {
-               if (task.isSuccessful()){
-                   StyleableToast.makeText(this, "Please check your email", Toast.LENGTH_LONG, R.style.mytoast).show();
-               }
-            });
-        });
+        binding.changePassword.setOnClickListener(view -> mAuth.sendPasswordResetEmail(mAuth.getCurrentUser().getEmail()).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                StyleableToast.makeText(this, "Please check your email", Toast.LENGTH_LONG, R.style.mytoast).show();
+            }
+        }));
 
         backToMenu.setOnClickListener(view -> {
             Methods.clickSound(this);
@@ -119,37 +112,36 @@ public class SettingsActivity extends AppCompatActivity {
             changeActivity(MainActivity.class);
         });
     }
-
-    private void uploadImage() {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Changes");
-        progressDialog.setMessage("Saving changes...");
-        progressDialog.show();
-
-        storageReference = FirebaseStorage.getInstance().getReference("profile_photos/" + username.getText().toString());
-        storageReference.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-            Toast.makeText(this, "Changes are successfully saved", Toast.LENGTH_SHORT).show();
-            if (progressDialog.isShowing()) progressDialog.dismiss();
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Changes are failed to save", Toast.LENGTH_SHORT).show();
-            if (progressDialog.isShowing()) progressDialog.dismiss();
-        });
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100 && data != null && data.getData() != null) {
-            imageUri = data.getData();
-            binding.profileImage.setImageURI(imageUri);
+        if (requestCode == KITKAT_VALUE && data != null && data.getData() != null) {
+                imageUri = data.getData();
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                int imageSize = inputStream.available();
+                inputStream.close();
+
+                if (imageSize > MAX_IMAGE_SIZE) {
+                    StyleableToast.makeText(this, "Image is too large", Toast.LENGTH_LONG, R.style.mytoast).show();
+                    imageUri = null;
+                } else {
+                binding.profileImage.setImageURI(imageUri);
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void selectImage() {
         Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, 100);
+        intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startActivityForResult(intent, KITKAT_VALUE);
+
     }
 
     private void changeActivity(Class class_) {
@@ -158,25 +150,24 @@ public class SettingsActivity extends AppCompatActivity {
         this.finish();
     }
 
-    private void loadImage() {
-        usernameText = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("profile_photos/" + usernameText);
-
-        File localFile;
-        try {
-             localFile = File.createTempFile("images", "jpg");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private void saveImage() {
+        UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder().setPhotoUri(imageUri).build();
+        if (imageUri == null) {
+            progressDialog.dismiss();
+            StyleableToast.makeText(this, "Changes are not found", Toast.LENGTH_LONG, R.style.mytoast).show();
+            return;
         }
-        storageRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-                    Toast.makeText(this, "success!", Toast.LENGTH_SHORT).show();
-                    Bitmap bitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                    profileImage = findViewById(R.id.profileImage);
-                    profileImage.setImageBitmap(bitmap);
-                })
-                .addOnFailureListener(exception -> {
-                    Toast.makeText(this, "fail", Toast.LENGTH_SHORT).show();
-                });
+        FirebaseAuth.getInstance().getCurrentUser().updateProfile(userProfileChangeRequest).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                StyleableToast.makeText(this, "Changes are saved successfully", Toast.LENGTH_LONG, R.style.mytoast).show();
+            }
+        });
     }
+
+    private void loadImage() {
+        profileImage = findViewById(R.id.profileImage);
+        Glide.with(this).load(mAuth.getCurrentUser().getPhotoUrl()).into(profileImage);
+        Log.e("look2", mAuth.getCurrentUser().getPhotoUrl() + "");
+    }
+
 }

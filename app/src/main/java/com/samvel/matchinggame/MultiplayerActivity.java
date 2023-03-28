@@ -286,7 +286,6 @@ public class MultiplayerActivity extends AppCompatActivity implements View.OnCli
             else if (p1guessed < p2guessed) winText.setText(p2Text + " win!");
             else winText.setText("Draw");
             mul_end.show();
-            Toast.makeText(this, "you win", Toast.LENGTH_SHORT).show();
         }
     }
 

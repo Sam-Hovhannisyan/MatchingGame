@@ -7,7 +7,6 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
-import android.widget.GridLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,7 +19,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.Objects;
 
 public class MenuActivity extends AppCompatActivity {
@@ -58,7 +56,11 @@ public class MenuActivity extends AppCompatActivity {
                 rootDatabaseRef.child(mAuth.getCurrentUser().getDisplayName()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        SettingsActivity.bestScoreInt = Integer.parseInt(snapshot.child("bestScore").getValue().toString());
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                            String value = dataSnapshot.getValue().toString();
+                            if (Objects.equals(dataSnapshot.getKey(), "bestScore")) SettingsActivity.bestScoreInt = Integer.parseInt(value);
+                            Log.e("Settings", dataSnapshot.getKey());
+                        }
                     }
 
                     @Override

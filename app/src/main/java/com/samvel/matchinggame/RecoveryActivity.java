@@ -9,6 +9,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,7 +40,7 @@ public class RecoveryActivity extends AppCompatActivity {
 
         resetPassword.setOnClickListener(view -> {
 
-            String mEmail = email.getText().toString();
+            String mEmail = email.getText().toString().trim();
 
             if (isEmpty(email)) email.setError("Email mustn't be empty");
             else if (checkAccountEmailExistInFirebase(mEmail)) email.setError("Email is not found");
@@ -56,7 +57,7 @@ public class RecoveryActivity extends AppCompatActivity {
                         this.finish();
                     }
                     else {
-                        email.setError("Something went wrong");
+                        email.setError("Something went wrong or incorrect account");
                     }
                 });
             }
@@ -96,7 +97,17 @@ public class RecoveryActivity extends AppCompatActivity {
     private boolean checkAccountEmailExistInFirebase(String email) {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         final boolean[] b = new boolean[1];
-        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(task -> b[0] = !task.getResult().getSignInMethods().isEmpty());
+
+            mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(task -> {
+                if (task.isSuccessful()){
+
+                b[0] = !task.getResult().getSignInMethods().isEmpty();
+                }
+                else {
+                    this.email.setError("Incorrect account");
+                }
+            });
+
         return b[0];
     }
 
