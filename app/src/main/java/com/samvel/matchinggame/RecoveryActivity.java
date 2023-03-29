@@ -83,9 +83,9 @@ public class RecoveryActivity extends AppCompatActivity {
         this.finish();
     }
 
-        @Override
+    @Override
     public void onBackPressed() {
-        moveTaskToBack(false);
+        changeActivity(LoginActivity.class);
     }
 
 
@@ -98,15 +98,15 @@ public class RecoveryActivity extends AppCompatActivity {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         final boolean[] b = new boolean[1];
 
-            mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(task -> {
-                if (task.isSuccessful()){
+        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
 
                 b[0] = !task.getResult().getSignInMethods().isEmpty();
-                }
-                else {
-                    this.email.setError("Incorrect account");
-                }
-            });
+            }
+            else {
+                this.email.setError("Incorrect account");
+            }
+        });
 
         return b[0];
     }

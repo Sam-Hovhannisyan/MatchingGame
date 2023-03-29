@@ -2,11 +2,15 @@ package com.samvel.matchinggame;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +45,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static int bestScoreInt = 0;
     public static final int KITKAT_VALUE = 1002;
     private static final int MAX_IMAGE_SIZE = 1536 * 1536;
+    public static final String MANAGE_EXTERNAL_STORAGE = "android.permission.MANAGE_EXTERNAL_STORAGE";
     private DatabaseReference rootDatabaseRef;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
@@ -116,17 +121,17 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == KITKAT_VALUE && data != null && data.getData() != null) {
-                imageUri = data.getData();
+            imageUri = data.getData();
             try {
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 int imageSize = inputStream.available();
                 inputStream.close();
-
                 if (imageSize > MAX_IMAGE_SIZE) {
                     StyleableToast.makeText(this, "Image is too large", Toast.LENGTH_LONG, R.style.mytoast).show();
                     imageUri = null;
                 } else {
-                binding.profileImage.setImageURI(imageUri);
+                    //saveImage();
+                    binding.profileImage.setImageURI(imageUri);
 
                 }
             } catch (IOException e) {
@@ -136,11 +141,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void selectImage() {
-        Intent intent = new Intent();
-        intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        startActivityForResult(intent, KITKAT_VALUE);
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+        galleryIntent.setType("image/*");
+        if (galleryIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(Intent.createChooser(galleryIntent, "Select File"), KITKAT_VALUE);
+        }
 
     }
 
@@ -165,9 +170,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void loadImage() {
-        profileImage = findViewById(R.id.profileImage);
-        Glide.with(this).load(mAuth.getCurrentUser().getPhotoUrl()).into(profileImage);
-        Log.e("look2", mAuth.getCurrentUser().getPhotoUrl() + "");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            profileImage = findViewById(R.id.profileImage);
+            Glide.with(this).load(mAuth.getCurrentUser().getPhotoUrl()).into(profileImage);
+            Log.e("look2", mAuth.getCurrentUser().getPhotoUrl() + "");
+        } else {
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, KITKAT_VALUE);
+        }
+
+
     }
 
     @Override

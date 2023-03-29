@@ -35,21 +35,21 @@
             android:layout_gravity="center"
             tools:ignore="MissingConstraints">
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/sec30"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
                 android:text="30 sec" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/sec45"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
                 android:text="45 sec" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/sec60"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -61,13 +61,13 @@
             android:layout_marginTop="20sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/cancelTimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10sp"
                 android:text="Cancel timer"/>
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/startGame"
                 android:layout_marginHorizontal="10sp"
                 android:layout_width="wrap_content"

@@ -76,7 +76,7 @@
                 android:textColor="@color/white"
                 android:textColorHint="@color/white" />
         </LinearLayout>
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/startGame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

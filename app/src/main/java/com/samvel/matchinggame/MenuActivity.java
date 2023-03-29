@@ -1,17 +1,24 @@
 package com.samvel.matchinggame;
 
+import static com.samvel.matchinggame.SettingsActivity.KITKAT_VALUE;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -19,7 +26,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import java.util.Objects;
 
 public class MenuActivity extends AppCompatActivity {
 
@@ -38,6 +44,8 @@ public class MenuActivity extends AppCompatActivity {
         mediaPlayer.setLooping(true);
         //mediaPlayer.start();
 
+        ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, KITKAT_VALUE);
+
         rootDatabaseRef = FirebaseDatabase.getInstance().getReference().child("users");
         mAuth = FirebaseAuth.getInstance();
 
@@ -53,13 +61,10 @@ public class MenuActivity extends AppCompatActivity {
             playButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.bounce));
             if (mAuth.getCurrentUser() != null){
                 MainActivity.userName = mAuth.getCurrentUser().getDisplayName();
-                rootDatabaseRef.child(mAuth.getCurrentUser().getDisplayName()).addListenerForSingleValueEvent(new ValueEventListener() {
+                rootDatabaseRef.child(mAuth.getCurrentUser().getDisplayName()).child("bestScore").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren()){
-                            String value = dataSnapshot.getValue().toString();
-                            if (Objects.equals(dataSnapshot.getKey(), "bestScore")) SettingsActivity.bestScoreInt = Integer.parseInt(value);
-                        }
+                        SettingsActivity.bestScoreInt = Integer.parseInt(snapshot.getValue().toString());
                     }
 
                     @Override

@@ -35,14 +35,14 @@
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/playAgain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10sp"
                 android:text="Play Again" />
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/exit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -62,19 +62,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/startGame"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10sp"
                 android:text="Play"/>
 
-           <Button
-               android:id="@+id/setTimer"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_marginHorizontal="10sp"
-               android:text="Set timer"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/setTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10sp"
+                android:text="Set timer"/>
         </LinearLayout>
 
 

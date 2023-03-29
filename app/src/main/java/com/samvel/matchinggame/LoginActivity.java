@@ -27,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,7 +100,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         changeActivity(RegisterActivity.class);
-        //moveTaskToBack(true);
     }
 
     private void PerformAuth() {
@@ -122,6 +122,20 @@ public class LoginActivity extends AppCompatActivity {
                 if (task.isSuccessful()){
                     if (mAuth.getCurrentUser().isEmailVerified()){
                         changeActivity(MainActivity.class);
+                        rootDatabaseRef.child(mAuth.getCurrentUser().getDisplayName()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                                    String value = dataSnapshot.getValue().toString();
+                                    if (Objects.equals(dataSnapshot.getKey(), "bestScore")) SettingsActivity.bestScoreInt = Integer.parseInt(value);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
                         try {
                             mUser = mAuth.getCurrentUser();
                             MainActivity.userName = mUser.getDisplayName();
