@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Timer
 
-    private long startTimeInMillis;
+    private long startTimeInMillis = 1;
     private TextView mTextViewCountDown;
     private CountDownTimer mCountDownTimer;
     private boolean isVisible = false;
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     int n = 12; // Game size
     int id, width, height, nBestScore, tick, playedGames;
-    int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, nScore = 0, stepCount = 0;
+    int clicked = 0, lastClicked = -1, allChecked = 0, i = 0, lvl = 0, nScore = 0, stepCount = 0;
     String sizes, scores, steps, times, p1Text, p2Text;
     String currentSize = "3x4";
     GridLayout gridLayout;
@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_3x4.setOnClickListener(v -> {
             n = 12;
+            lvl = 0;
             currentSize = "3x4";
             btn_3x4.setBackgroundColor(btn_color_pressed);
             btn_4x5.setBackgroundColor(btn_color);
@@ -271,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_4x5.setOnClickListener(v -> {
             n = 20;
+            lvl = 1;
             currentSize = "4x5";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color_pressed);
@@ -279,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         btn_5x6.setOnClickListener(v -> {
             n = 30;
+            lvl = 2;
             currentSize = "5x6";
             btn_3x4.setBackgroundColor(btn_color);
             btn_4x5.setBackgroundColor(btn_color);
@@ -499,9 +502,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             clicked = 0;
         }
         if (allChecked == n) {
-            int k = 0;
-            if (!isVisible) k = 100;
-            nScore = 200 * (i + 1) - (int) (startTimeInMillis / 400000) - tick - stepCount - k;
+            if (!isVisible) {
+                nScore = 100 * (int) Math.pow(2, lvl) - tick - stepCount;
+            }
+            else{
+                nScore =  100 * (int) Math.pow(2, lvl) - (int) (500000 / startTimeInMillis) - tick - stepCount + 100;
+            }
             if (nScore > nBestScore) nBestScore = nScore;
             endText.setText("You Win!");
             score.setText("Your score:" + nScore);

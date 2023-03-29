@@ -64,12 +64,17 @@
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/cancelTimer"
                 android:layout_width="wrap_content"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/black"
+                android:paddingHorizontal="10sp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10sp"
                 android:text="Cancel timer"/>
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/startGame"
                 android:layout_marginHorizontal="10sp"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Play"/>
