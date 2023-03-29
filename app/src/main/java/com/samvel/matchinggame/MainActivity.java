@@ -1,6 +1,7 @@
 package com.samvel.matchinggame;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean isAlive = false; // Check if thread is alive
     boolean[] checkIsImageOpen = new boolean[n]; // Check if image is opened
     boolean isOnPause = true;
+    boolean isStarted = false;
 
     ArrayList<Integer> scoreList = new ArrayList<>();
     ArrayList<Boolean> isClickable = new ArrayList<>(); // Is button clickable or not clickable
@@ -109,12 +111,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BottomNavigationView bottomNavBar = findViewById(R.id.bottomNavigationView);
 
         bottomNavBar.getMenu().getItem(1).setOnMenuItemClickListener(item -> {
-            changeActivity(ReviewsActivity.class);
+            if (isStarted){
+                if (isVisible) pauseTimer();
+                new android.app.AlertDialog.Builder(this).setMessage("Do you want to quit the game? Your score will not be saved").setPositiveButton("Yes", (dialogInterface, i) -> {
+                    changeActivity(ReviewsActivity.class);
+                }).setNegativeButton("No", (dialogInterface, i) -> {
+                    if (isVisible) startTimer();
+                }).setCancelable(false).show();
+            }else{
+                changeActivity(ReviewsActivity.class);
+            }
             bottomNavBar.getMenu().getItem(1).setChecked(true);
             return true;
         });
         bottomNavBar.getMenu().getItem(2).setOnMenuItemClickListener(item -> {
-            changeActivity(ScoresActivity.class);
+            if (isStarted){
+                if (isVisible) pauseTimer();
+                new android.app.AlertDialog.Builder(this).setMessage("Do you want to quit the game? Your score will not be saved").setPositiveButton("Yes", (dialogInterface, i) -> {
+                    changeActivity(ScoresActivity.class);
+                }).setNegativeButton("No", (dialogInterface, i) -> {
+                    if (isVisible) startTimer();
+                }).setCancelable(false).show();
+            }else{
+                changeActivity(ScoresActivity.class);
+            }
             bottomNavBar.getMenu().getItem(2).setChecked(true);
             return true;
         });
@@ -348,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resetAll();
             generate();
             isVisible = false;
+            isStarted = true;
             isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));
             isClickableTrack = new ArrayList<>(Arrays.asList(new Boolean[n]));
             Collections.fill(isClickable, Boolean.TRUE);
@@ -363,6 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             timeDialog.cancel();
             imageNumbers = new ArrayList<>();
             isVisible = true;
+            isStarted = true;
             resetAll();
             generate();
             isClickable = new ArrayList<>(Arrays.asList(new Boolean[n]));

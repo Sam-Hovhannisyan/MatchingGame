@@ -115,7 +115,7 @@ public class MenuActivity extends AppCompatActivity {
     private void changeActivity(Class class_) {
         startActivity(new Intent(this, class_));
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        this.finish();
+        //this.finish();
     }
 
     @Override

@@ -42,7 +42,7 @@
                 android:layout_marginTop="10sp"
                 android:textColor="@color/white" />
 
-            <androidx.appcompat.widget.AppCompatButton
+            <Button
                 android:id="@+id/playAgain"
                 android:layout_width="wrap_content"
                 android:backgroundTint="@color/white"
