@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DatabaseReference rootDatabaseRef;
 
     // Timer
-
     private long startTimeInMillis = 1;
     private TextView mTextViewCountDown;
     private CountDownTimer mCountDownTimer;
@@ -155,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         logo = findViewById(R.id.logo);
 
         gridLayout = findViewById(R.id.gridLayout);
-
 
         int action_btn_color = Color.rgb(226, 209, 166);
         int action_btn_color_light = Color.rgb(255, 236, 189);
@@ -544,6 +542,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         String current = "";
         playedGames++;
+        isStarted = false;
 
         if (nScore < 0) nScore = 0;
         scores += nScore + "-";
@@ -659,6 +658,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onFinish() {
                 endDialog.show();
+                isStarted = false;
                 playedGames++;
                 if (allChecked == n) {
                     score.setText("Your score: " + nScore);
